@@ -1,0 +1,138 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from math import ceil
+from test_module import test_results
+# from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.regression.linear_model import OLS
+from statsmodels.api import add_constant
+from scipy.stats import boxcox
+from scipy.special import inv_boxcox
+import warnings
+
+warnings.filterwarnings('ignore')
+
+def read_dataset(name='data/factor_capacidad_conjunto.csv',data='solar'):
+    df = pd.read_csv(name,index_col=0,parse_dates=True)
+    df = df.rename(columns={
+        data: 'y'
+    })
+    return df[['y']]
+
+def create_fourier(df, freqs=[24,24*365], levels=None):
+    if levels is not None:
+        assert len(levels) == len(freqs)
+    else:
+        levels = [1 for _ in freqs]
+
+    T = len(df)
+    t = np.arange(0,T)
+    result_df = df.copy()
+    for i, f in enumerate(freqs):
+        for l in range(1, levels[i]+1):
+            sin = np.sin(2*np.pi*t*l/f)
+            result_df[f'sen_f{f}_l{l}'] = sin
+            cos = np.cos(2*np.pi*t*l/f)
+            result_df[f'cos_f{f}_l{l}'] = cos
+    return result_df
+
+def create_sarima_df(df, lags=[24*365], freqs=[24, 24*365], levels=None):
+    if freqs is not None:
+        df = create_fourier(df[['y']], freqs=freqs, levels=levels)
+    if lags is not None:
+        for l in lags:
+            df[f'lag_{l}'] = df['y'].shift(l)
+    return df.dropna()
+
+def create_sarimax_df(df, df_ext, lags=[24*365], lags_ext=[1,24,365*24], freqs=[24, 24*365], levels=None):
+    if freqs is not None:
+        df = create_fourier(df[['y']], freqs=freqs, levels=levels)
+    df = df.merge(df_ext, how='left', left_index=True, right_index=True)
+    df = df.rename(columns={
+        'y_x': 'y',
+        'y_y': 'x',
+    })
+    if lags is not None:
+        for l in lags:
+            df[f'lag_{l}'] = df['y'].shift(l)
+    if lags_ext is not None:
+        for l in lags_ext:
+            df[f"xlag_{l}"] = df['x'].shift(l)
+    
+    df = df.drop(['x'], axis=1)
+    return df.dropna()
+
+def extend_df(df, new_y, freq='H'):
+    last_timestamp = df.index[-1]
+    new_timestamps = pd.date_range(start=last_timestamp, periods=len(new_y)+1, freq=freq)[1:]
+    new_data = pd.DataFrame({'y': new_y})
+    new_data.index=new_timestamps
+    new_df = pd.concat([df[['y']], new_data])
+    new_df = new_df.asfreq('H')
+    return new_df
+
+df = read_dataset(data='eolica')
+df_exog = read_dataset(data='solar')
+df = df.iloc[-24*365*3:]
+df_exog = df_exog.iloc[-24*365*3:]
+df['y'] = np.clip(df['y'], 0.0001, np.inf)
+df['y'], lambda_boxcox = boxcox(df['y'])
+df_exog['y'] = boxcox(df_exog['y'], lambda_boxcox)
+
+STEP_HORIZON = 24
+FULL_HORIZON = 24*3
+
+LAGS=[24]
+# LAGS_EXT=[1,2,24]
+FREQS=[24,24*365]
+LEVELS=[3,5]
+
+Y_full_train = df.iloc[:-FULL_HORIZON]['y']
+Y_full_test = df.iloc[-FULL_HORIZON:][['y']]
+Y_train = pd.DataFrame(Y_full_train)
+
+X_train = create_sarima_df(Y_train, df_exog, lags=LAGS, freqs=FREQS, levels=LEVELS)
+X_train = add_constant(X_train)
+model = OLS(X_train['y'], exog=X_train[X_train.columns.difference(['y'])])
+results = model.fit()
+
+n_laps = ceil(FULL_HORIZON/STEP_HORIZON)
+for i in range(n_laps):
+    print(f'Lap {i+1}/{n_laps}')
+    if -FULL_HORIZON + (i+1)*STEP_HORIZON == 0:
+        horizon = len(Y_full_test.iloc[-FULL_HORIZON + i*STEP_HORIZON:])
+    else:
+        horizon = len(Y_full_test.iloc[-FULL_HORIZON + i*STEP_HORIZON:-FULL_HORIZON + (i+1)*STEP_HORIZON])
+
+    assert horizon <= min(LAGS)
+
+    future_Y = extend_df(Y_train, pd.Series(np.ones(horizon)))
+    X_train = create_sarimax_df(future_Y, df_ext=df_exog, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
+    X_train = X_train[X_train.columns.difference(['y'])]
+
+    forecast = results.get_forecast(steps=horizon, exog=X_train.iloc[-horizon:])
+    forecast = forecast.predicted_mean
+    Y_train = extend_df(Y_train, forecast)
+    # results.extend(Y_train)
+    results = results.append(Y_train.iloc[-horizon:], exog=X_train.iloc[-horizon:], refit=False)
+
+Y_train['y'] = inv_boxcox(Y_train['y'], lambda_boxcox)
+Y_full_test['y'] = inv_boxcox(Y_full_test['y'], lambda_boxcox)
+test_results(Y_full_test['y'].reset_index(drop=True), Y_train.iloc[-FULL_HORIZON:]['y'].reset_index(drop=True))
+print(results.summary())
+# Plot predictions
+fig, ax = plt.subplots(1, 1, figsize = (20, 7))
+Y_hat_df = Y_full_test.merge(Y_train, how='left', left_index=True, right_index=True)
+# plot_df = pd.concat([Y_train_df, Y_hat_df]).set_index('ds')
+plot_df = Y_hat_df
+# plot_df[['y', 'NHITS']].plot(ax=ax, linewidth=2)
+plot_df[['y_x', 'y_y']].plot(ax=ax, linewidth=2)
+ax.set_title('Solar', fontsize=22)
+ax.set_ylabel('Factor capacidad', fontsize=20)
+ax.set_xlabel('Timestamp [t]', fontsize=20)
+ax.legend(['Real','Prediction'])
+ax.grid()
+
+plt.savefig('sarimax.png', dpi=300, bbox_inches='tight')
+# plt.show()
+pass

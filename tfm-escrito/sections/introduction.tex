@@ -1,0 +1,67 @@
+\section{Introduction}
+\subsection{Background and motivation}
+The global energy landscape is undergoing a significant transformation, driven by the urgent need to reduce greenhouse gas emissions and mitigate climate change. As the world's fourth-largest economy in the European Union, Spain is at the forefront of this transition, with a robust commitment to renewable energy sources. The country has set ambitious targets for renewable energy integration, aiming for 74% of its electricity to come from renewable sources by 2030, and to achieve carbon neutrality by 2050. This transition is supported by favorable geographical conditions, particularly for solar and wind energy, which are abundant across the Spanish territory .
+
+Historical Context and Growth of Renewable Energy in Spain
+Historically, Spain has relied heavily on fossil fuels and nuclear energy. However, the 21st century has seen a significant shift towards renewable energy, particularly wind and solar power. The growth of renewable energy in Spain has been driven by several factors, including government policies, technological advancements, and decreasing costs of renewable technologies. The Spanish government introduced the Renewable Energy Plan 2005–2010, which laid the foundation for the rapid expansion of wind and solar energy. This plan was further bolstered by subsequent legislation, such as the 2011–2020 Renewable Energy Plan, which set specific targets for the integration of renewable energy into the national grid .
+
+Wind power has been a major success story in Spain, with the country ranking among the top wind power producers globally. By 2022, Spain's installed wind power capacity had reached approximately 29 GW, contributing to around 23% of the country's total electricity generation. Solar power, both photovoltaic (PV) and concentrated solar power (CSP), has also seen substantial growth. By 2022, Spain had an installed solar capacity of over 18 GW, contributing to around 10% of the national electricity mix .
+
+The Role of Renewable Energy in Spain’s Energy Transition
+The integration of renewable energy, particularly solar and wind power, is a cornerstone of Spain's strategy to reduce carbon emissions and ensure energy security. The intermittent and variable nature of these energy sources presents significant challenges to grid stability and requires sophisticated modelling to predict generation patterns accurately. This is crucial for balancing supply and demand, optimizing the operation of the electrical grid, and minimizing the reliance on fossil fuel-based backup power plants .
+
+Spain's geography presents an ideal case for the study of solar and wind power generation. The Iberian Peninsula is characterized by diverse climatic regions, from the sunny Mediterranean coast to the windy plains of Castilla-La Mancha and the Basque Country. This diversity provides a unique opportunity to model the generation potential of renewable energy across different regions, accounting for varying meteorological conditions.
+
+The Need for Advanced Modelling Techniques
+Accurately predicting the generation of solar and wind power is a complex task due to the stochastic nature of weather conditions and the non-linear interactions between various atmospheric variables. Traditional statistical methods, while useful, often fall short in capturing the intricacies of renewable energy generation. In recent years, the advent of advanced machine learning techniques has opened new avenues for more accurate and reliable modelling. These techniques can handle large datasets, capture non-linear relationships, and provide better generalization across different temporal and spatial scales .
+
+Given the increasing penetration of renewable energy into the grid, it is imperative to develop models that not only predict generation with high accuracy but also adapt to changing weather patterns and technological advancements. Machine learning models, such as artificial neural networks (ANNs), support vector machines (SVMs), and ensemble learning methods, offer promising tools for this purpose. Moreover, hybrid models that combine statistical and machine learning approaches are gaining traction as they can leverage the strengths of both paradigms.
+
+Motivation for the Study
+This thesis is motivated by the critical need to enhance the accuracy and reliability of solar and wind power generation models within the context of the Spanish electrical system. As Spain continues to increase its reliance on renewable energy, the accurate modelling of generation is essential for grid operators, policymakers, and energy producers. Improved models can lead to more efficient grid management, reduced operational costs, and a smoother integration of renewable energy into the grid.
+
+The study aims to explore various statistical and machine learning models to determine the most effective approaches for modelling solar and wind power generation in Spain. By comparing the performance of these models, the thesis seeks to identify the strengths and limitations of each approach, providing insights into their practical applications in real-world scenarios. The ultimate goal is to contribute to the body of knowledge that supports Spain's transition to a sustainable and resilient energy system.
+
+In summary, this thesis addresses a critical challenge in the field of renewable energy: the accurate modelling of solar and wind power generation. The findings of this research have the potential to inform future developments in energy policy, grid management, and renewable energy integration, not only in Spain but also in other regions with similar geographical and climatic conditions.
+
+These references provide context and support the arguments made in the Background and Motivation section:
+
+[6] International Energy Agency (IEA). "Spain 2022 - Energy Policy Review." IEA, 2022.
+[7] Red Eléctrica de España (REE). "Informe del Sistema Eléctrico Español 2022." REE, 2022.
+[8] Ministerio para la Transición Ecológica y el Reto Demográfico. "Plan Nacional Integrado de Energía y Clima 2021-2030." Gobierno de España, 2020.
+[9] European Environment Agency (EEA). "Renewable Energy in Europe 2022: Recent Growth and Knock-on Effects." EEA, 2022.
+[10] Pedregosa, F., et al. "Scikit-learn: Machine Learning in Python." Journal of Machine Learning Research, 12(1), 2825-2830, 2011.
+
+\subsection{Problem statement}
+The increasing integration of renewable energy sources, particularly solar and wind power, into the Spanish electrical grid presents both opportunities and challenges. As Spain progresses towards its ambitious goal of generating 74% of its electricity from renewable sources by 2030 and achieving carbon neutrality by 2050, the variability and unpredictability of these energy sources pose significant challenges for grid stability and energy planning. The intermittent nature of solar and wind power generation, driven by fluctuating weather conditions, necessitates the development of accurate forecasting models to ensure a reliable and efficient energy supply .
+
+Challenges in Solar and Wind Power Generation Modelling
+Solar and wind energy, while abundant and environmentally sustainable, are inherently variable. Solar power generation depends on factors such as sunlight intensity, cloud cover, and temperature, which can vary significantly throughout the day and across seasons. Wind power, on the other hand, is influenced by wind speed, direction, and atmospheric pressure, all of which can fluctuate on short timescales and across different geographical regions. This variability introduces uncertainty into power generation, making it difficult for grid operators to balance supply and demand effectively.
+
+Traditional methods for predicting solar and wind power generation have relied on statistical techniques, which, while useful in capturing general trends, often struggle to account for the complex, non-linear interactions between various meteorological variables. These models are limited in their ability to generalize across different temporal and spatial scales, leading to inaccuracies that can compromise grid stability and increase the need for costly reserve power from fossil-fuel-based sources .
+
+The advent of machine learning (ML) techniques offers a promising alternative to traditional methods, providing the potential to model complex systems with higher accuracy and robustness. However, despite their potential, ML models face challenges, including the need for large amounts of data, the risk of overfitting, and the requirement for significant computational resources. Furthermore, the performance of these models can vary depending on the specific algorithms used, the quality of the input data, and the characteristics of the target region.
+
+The Need for Region-Specific Modelling in Spain
+The Spanish electrical grid presents a unique case study for the modelling of renewable energy generation due to the country’s diverse climatic and geographical conditions. Spain's vast landscapes, ranging from the sun-drenched regions of Andalusia to the windy northern territories, result in highly variable solar and wind resources. This geographical diversity necessitates region-specific models that can accurately predict power generation in different parts of the country.
+
+Moreover, Spain's energy system is characterized by a high degree of decentralization, with numerous small and medium-sized renewable energy producers contributing to the grid. This decentralization further complicates the task of accurately forecasting energy generation, as it requires the aggregation of outputs from a large number of distributed sources, each with its own set of influencing factors.
+
+To date, research on solar and wind power generation modelling in Spain has been relatively fragmented, with studies often focusing on specific regions or limited datasets. There is a lack of comprehensive studies that systematically compare different statistical and ML models across the diverse regions of Spain, taking into account the unique characteristics of each area. This gap in the literature highlights the need for a thorough and comparative analysis of modelling approaches, tailored to the Spanish context .
+
+Objectives and Scope of the Study
+The primary objective of this thesis is to address the challenges associated with modelling solar and wind power generation in the Spanish electrical grid by exploring and comparing various statistical and machine learning models. The study aims to:
+
+Develop and Evaluate Modelling Techniques: Investigate the effectiveness of different statistical and machine learning models in predicting solar and wind power generation across various regions of Spain. This will include traditional time series methods, such as ARIMA and SARIMA, as well as advanced ML models like Artificial Neural Networks (ANNs), Support Vector Machines (SVMs), and ensemble methods.
+
+Assess Model Performance: Conduct a comparative analysis of the models based on their accuracy, generalization capability, computational efficiency, and adaptability to different regions and climatic conditions in Spain. This will involve the use of large-scale datasets, including historical weather data, solar irradiance, and wind speed measurements, as well as power generation records.
+
+Propose Optimized Hybrid Models: Explore the potential of hybrid models that combine the strengths of statistical and machine learning approaches. The aim is to develop optimized models that leverage the predictive power of machine learning while maintaining the interpretability and robustness of statistical methods.
+
+Provide Practical Recommendations: Offer practical insights and recommendations for policymakers, grid operators, and renewable energy producers in Spain. These recommendations will focus on improving the reliability of power generation forecasts, optimizing grid management, and supporting the integration of a higher proportion of renewable energy into the national grid.
+
+In conclusion, this thesis seeks to fill a critical gap in the existing research on renewable energy modelling in Spain by providing a comprehensive, comparative analysis of different modelling approaches. The findings of this study are expected to contribute to the development of more accurate and reliable forecasting tools, supporting Spain’s transition to a sustainable and resilient energy system.
+
+\subsection{Objectives}
+\subsection{Scope of the study}
+\subsection{Study structure}
