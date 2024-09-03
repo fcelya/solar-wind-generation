@@ -4,6 +4,7 @@ __pycache__/
 data
 results
 
+
 *.pkl
 *.csv
 *.aux
@@ -21,3 +22,6 @@ results
 *.toc
 *.prof
 *.png
+
+
+!tfm-escrito/assets/*.png
