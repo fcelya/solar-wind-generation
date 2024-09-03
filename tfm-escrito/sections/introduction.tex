@@ -49,6 +49,7 @@ As it can be seen, there are many different renewable energy resources and techn
 In \autoref{fig:generation-mix} it can be seen how solar, wind and hydro energy covers more than 95\% of the energy generation of 2023 -- as percentage of the total generation of 134.321 GWh of renewable energy -- while other sources like geothermal and biomass are almost negligible. 
 
 \subsection{Motivation}
+\label{sec:motivation}
 
 In the previous section in \autoref{fig:generation-mix} a promising picture of the renewable energy generation in Spain could be seen, even more when the total generation is compared with the non-renewable generation of 132.486 GWh in Spain \cite{renewable_generation_reports_2023}, showing how renewable energy generation surpassed the 50\% mark.
 
@@ -71,7 +72,26 @@ Grid operators need to consider these challenges at a short and medium term when
 
 The first two characteristics, the variability and uncertainty of these resources, leads in fact to a great problem in long term planning. When deciding where to locate which power plants and of what capacity, it is important to have accurate models of all resources. In fact, many of the optimization models used in long term planning require forecast models of these resources, which is very challenging due to the aforementioned characteristics. The lack of realistic and accurate models of solar and wind energy generation is precisely what this work aims to solve.
 
-\subsection{Problem statement}
-\subsection{Objectives}
-\subsection{Scope of the study}
-\subsection{Study structure}
+\subsection{Objective and scope}
+By looking at the overview of the wind and solar energy presented in \autoref{sec:motivation} \nameref{sec:motivation} and understanding the objectives and challenges of grid planners -- long term distribution of resources to ensure the grid's effectiveness and reliability -- the need for a model that can be used by these planners has become apparent. 
+
+To be more precise, for such a model to be useful it must accurately represent the wind and solar energy generation marginal and joint distributions. The characteristics the model must fulfill are the following:
+\begin{itemize}
+    \item \textbf{Modeled variable}: The variable to be modeled is the hourly capacity factor of wind, solar PV and solar thermal energy generation. The capacity factor $f_t$ can be calcualted as 
+    \begin{equation}
+        f_t=\frac{E_t}{P_t t}
+    \end{equation}
+    Where $E_t$ is the energy generated in a given timeframe, $P_t$ is the power output rating -- that is the rated installed capacity -- and $t$ is the length of the timeframe. As it can be seen, the capacity factor is a unitless ratio. 
+    
+    It has been chosen as the modeled variable due to having several beneficial characteristics. Numerically, $f_t \in \left[0,1\right]$ which makes it easier to model. It also is able to show the power generation without regarding the installed capacity. The installed capacity is often determined by policy decisions, awarded licenses or discretionary investment decisions by electricity companies and is thus harder to accurately model. The capacity factor however allows for an accurate representation of the generated power. 
+
+    The hourly frequency has been chosen as it is short enough to allow for significant changes throughout the day, but is not short enough for noise to become a significant part of the variable. Furthermore, this is the frequency used by most market players, with the electrical market quoting hourly values for example. 
+
+    The wind, solar PV and solar thermal capacity factors have been chosen as independent variables because the three of them have significantly different driving factors, making them have different dynamics that can be captured by individual models. Even the solar PV and solar thermal have different dynamics, thanks to the inertia provided by the storage of heat in solar thermal power. 
+    \item \textbf{Input variables}: The only exogenous variable that will be used in all models are the historical values of these capacity factors and temporal variables such as the month or hour. A purely time series approach has been taken, as opposed to other physical approaches that leverage weather forecasts. The intuition for this decision is that the information provided by the weather or any other significant variable should be integrated in the capacity factor, and relying on other external variables forces a two step approach where a model for those variables needs to be created and then a model for the capacity factor needs to be created, as there are no accurate forecasts for any of the other possible exogenous variables with a long enough timeframe. 
+    \item \textbf{Geographical scope}: The capacity factor will be that of the national Spanish power system. 
+    \item \textbf{Temporal scope}: The model should be able to forecast the capacity factor for a period of 1 to 10 years into the future, with hourly values. 
+    \item \textbf{Methodological scope}: Statistical, machine learning and deep learning models will be studied as candidates to modelling this variable. 
+\end{itemize}
+
+% \subsection{Study structure}
