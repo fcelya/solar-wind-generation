@@ -57,3 +57,26 @@ Several differences between these profiles shown in \autoref{fig:st-year-day} an
 
 The wind profile shown in \autoref{fig:w-year-day} is the most different of the three. The yearly profile is the most volatile of the three, with less of a clear seasonal pattern although it can be seen how the mean values in summer seem to be lower than those in the winter. In the daily profile there are not any obvious patterns which can be seen at first view. 
 
+\subsubsection{Individual statistical characteristics}
+After an initial view of the general time series for the three variables, a deeper look at the main statistical properties of these individual series is pertinent. For this deeper look a KDE and cumulative KDE will be shown and the main moments will be calculated. 
+
+The Kernel Density Estimate (KDE) is a non-parametric way of estimating the probability density function (PDF) of a random variable. It works by placing a kernel -- that is a smooth, symmetric function -- at each data point and then summing these kernels to produce a smooth estimate of the PDF. In more precise terms, the estimation of the PDF at $x$ denoted by $\hat{f}\left(x\right)$ is calculated as
+\begin{equation}
+    \hat{f}\left(x\right)=\frac{1}{nh}\sum^n_{i=1}K\left(\frac{x-x_i}{h}\right)
+\end{equation}
+
+where $n$ is the number of datapoints, $K\left(\cdot\right)$ is the kernel function, $h$ is the bandwidth -- a parameter used to approximate the width of the kernel and thus how smooth or sensitive to individual points the estimation is -- and $x_i$ are the individual datapoints.
+
+The chosen kernel function has been the Gaussian kernel, which is calculated as 
+\begin{equation}
+    K\left(x\right)=\frac{1}{\sqrt{2\pi}}\exp{-\frac{1}{2}x^2}
+\end{equation}
+
+The method selected for estimating the optimal bandwidth has been the method outlined in \cite{scott_1979}. 
+
+The cumulative KDE is an analogous method used for calculating the cumulative density function (CDF) instead of the PDF. It is calculated as
+\begin{equation}
+    \hat{F}\left(x\right)=\frac{1}{n}\sum^n_{i=1}\int_{-\infty}^{x}\frac{1}{h}K\left(\frac{t-x_i}{h}\right)dt
+\end{equation}
+
+For the 
