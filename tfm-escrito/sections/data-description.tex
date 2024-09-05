@@ -79,4 +79,82 @@ The cumulative KDE is an analogous method used for calculating the cumulative de
     \hat{F}\left(x\right)=\frac{1}{n}\sum^n_{i=1}\int_{-\infty}^{x}\frac{1}{h}K\left(\frac{t-x_i}{h}\right)dt
 \end{equation}
 
-For the 
+The KDE and cumulative KDE of all three variables can be seen in \autoref{fig:kde-triple}
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=\linewidth]{assets/kde-triple.png}
+    \caption{KDE and cumulative KDE of the three capacity factors}
+    \label{fig:kde-triple}
+\end{figure}
+
+Several observations can be made regarding these plots. First of all, the high density of zero like values in both solar plots is clear, with an even higher denisty in the solar PV. In fact it can be seen how both KDE have non zero values for x values below zero, however this only happens due to the symmetry and width of the gaussian kernel, which for the points at zero sums some value for points below zero. Appart from the mode at zero, both plots have another peak near their maximum value, at around 0.6 and 0.9 for the solar PV and solar thermal respectively. This is due to the shape of the solar ecliptic, where the sun remains at its highest point for longer than it is at any given point during ascent or descent. The solar thermal PDF also has a significant peak at around 0.3, probably due to this being the power at which the power plants runs with the stored heat at night. This is in fact the point where the daily curve in \autoref{fig:st-year-day} can be seen operating at night. As for the wind PDF and CDF, it is a much smoother plot, with the mode around 0.1 and then slowly and gradually tapers of. 
+
+In order to have a more quantitative view of these distributions, metrics relating to the first four moments are shown in \autoref{table:main-moments}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{rccc}
+        \toprule
+        Metric & \multicolumn{3}{c}{Value} \\ 
+        \cmidrule(lr){2-4}
+            & Solar PV & Solar Thermal & Wind \\
+        \midrule
+        Mean & 0.18 & 0.24 & 0.23 \\
+        Standard Deviation & 0.23 & 0.29 & 0.14 \\
+        Skew & 0.88 & 1.12 & 0.78 \\
+        Kurtosis & -0.79 & -0.08 & 0.01 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Main moments of the three capacity factors}
+    \label{table:main-moments}
+\end{table}
+
+Through these measures it can be seen how some of the intuitions obtained when looking at the time series plot of the different capacity factors were wrong. For example, the wind capacity factor is not the most volatile as it seemed, but in fact has the lowest standard deviation. This could be however due to the high variability of the solar profile, and taking away the seasonality of the three variables these metrics could be different.
+
+\subsubsection{Lagged relationships}
+Another key factor about the three series is their seasonality and how a given value at $t$ is influenced by past values at $t-1, t-2...$. In order to explore these relationships, two different metrics will be used. 
+
+The first one is the the autocorrelation. While correlation as expressed by the Pearson correlation coefficient is generally calculated like
+\begin{equation}
+    \rho{\left(X,Y\right)}=\frac{\text{cov}\left(X,Y\right)}{\sigma_X\sigma_Y}=\frac{\sum^n_{i=1}\left(x_i-\bar{x}\right)\left(y_i-\bar{y}\right)}{\sqrt{\sum^n_{i=1}\left(x_i-\bar{x}\right)^2}\sqrt{\sum^n_{i=1}\left(y_i-\bar{y}\right)^2}}
+\end{equation} 
+
+The autocorrelation function of a series quantifies the correlation of a series with lagged values of itself at different lags. For a given lag $k$ it is thus calculated like
+\begin{equation}
+    \label{eq:acf}
+    ACF\left(k\right)=\frac{\sum^{N-k}_{t=1}\left(x_t-\bar{x}\right)\left(x_{t+k}-\bar{x}\right)}{\sum^{N}_{t=1}\left(x_t-\bar{x}\right)^2}
+\end{equation} 
+
+The correlation coefficient has some known drawbacks however. It only measures linear relationships, so any dependence appart from this very simple relationship cannot be captured through a high correlation coefficient. That is what the new correlation coefficient proposed by \cite{correlation_2021} aims to solve, and why it has been included here. This new correlation coefficient, capable of capturing non linear relationships and with some very interesting statistical properties is calculated as 
+\begin{equation}
+    \xi{\left(X,Y\right)}=1-\frac{3\sum_{i=1}^{n-1}\left|r_{i+1}-r_i\right|}{n^2-1}
+\end{equation}
+
+Where the given pairs $\left(x_1,y_1\right), \left(x_2,y_2\right)...\left(x_n,y_n\right)$ have been aranged so that $x_1 \leq...\leq x_n$. Here $r_i$ denotes the rank of $y_i$. That is, the number of $j$ such that $y_j\leq y_i$. If there are ties among the $x$ values, the formula is slightly different, however with the capacity factor being a continuous variable it can be assumed that no ties will be present. Finally, note how even though $\rho \in \left[-1,1\right]$ the new correlation coefficient makes no distinction between positive and negative relationships and $\xi \in \left[0,1\right]$.
+
+With this new correlation coefficient, a new autocorrelation function is constructed in the same way as in \eqref{eq:acf}, calculating the correlation of the series with its lagged values for each lag. The following figure shows both autocorrelation functions for the three series. 
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=\linewidth]{assets/autocorrelation.png}
+    \caption{Autocorrelation functions with the two correlation coefficients for the three capacity factors at different hourly lags}
+    \label{fig:autocorrelation}
+\end{figure}
+
+Several observations can be made from the two autocorrelation functions in \autoref{fig:autocorrelation}. The seasonality in both solar series is again made apparent, with high autocorrelations at the 24, 48 and 72 hour mark showcasing the importance of the previous days' values at the same hour for a given day, but also at the 12, 36 and 60 hour mark. This second autocorrelation, negative in the case of pearson correlation, denotes the relationship between opposite moments of the day between different days. It is also noted how the correlation in the case of the solar PV is much more persistent, with the correlation peaks remaining more or less constant for the three days, while for the solar thermal this correlation tapers off a little bit faster. It is also interesting to see how the correlation at the 12, 36 and 60 hour mark is a lot lower for the solar thermal, showcasing how this relatinoship between values at a lag of 12 hours practically -- although not completely -- disappears, again due to the inertia of the thermal system which makes the solar thermal cycle less related to the sun's trayectory. As for the wind autocorrelation functions, it is much more linear and smooth, with the relevance of past values reducing gradually as the hours go by. There is a slight daily seasonality as well with the autocorrealtion at daily lags being slightly above what could be expected from the linear trend. However, this has a practically negligible relevance compared with the solar series. In fact, for the wind capacity factor it can be seen how the immediately previous values have much higher significance, while previous lags at the daily or semidaily periods hold much less significance. 
+
+\subsubsection{Seasonal breakdown}
+Even though the characteristics shown in previous sections already provides very significant information, it seems like many of these characteristics may be seasonally dependent. That is, they may not be the same in summer and in winter, or at night and during the day. That is why the previous analyses will be performed again but seasonally separating the datasets. Both daily and yearly splits will be done, where "day" is the period from 06:00 to 18:00 UTC and "night" is the period from 18:00 to 06:00 UTC. On the yearly split and taking into account the day's number within a year, spring goes from the 3\textsuperscript{rd} to the 5\textsuperscript{th} month, summer from the 6\textsuperscript{th} to the 8\textsuperscript{th}, autoumn from the 9\textsuperscript{th} to the 11\textsuperscript{th} and winter from the 12\textsuperscript{th} to the 2\textsuperscript{nd}, both inclusive in all cases. Note how these are metereological seasons, and not astronomical seasons based on the solstices and equinoxes. 
+
+The yearly seasonal breakdown can be seen in \autoref{fig:kde-triple-seasonal}. 
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=\linewidth]{assets/kde-triple-seasonal.png}
+    \caption{KDE plot for the three capacity factors for the different yearly seasons}
+    \label{fig:kde-triple-seasonal}
+\end{figure}
