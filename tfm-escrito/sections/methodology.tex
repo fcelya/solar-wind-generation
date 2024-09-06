@@ -1,4 +1,5 @@
 \section{Methodology}
+In this section several points regarding the methodology used in the work will be presented. The general approach taken to modelling, as well as the models themselves will be explained. The metrics used to evaluate the goodness of fit of the different models will also be presented. 
 \subsection{Overview of modelling approach}
 Criteria to be considered
 
@@ -7,3 +8,89 @@ Criteria to be considered
 \subsection{Model training and validation (Maybe?)}
 
 \subsection{Evaluation metrics}
+In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
+
+In order to best achieve this goal, the best performing model will have to be evaluated on different metrics, each corresponding to different attributes needed for correct whole picture modelling. These are the different attributes that will be tested and the metrics that will be used to test them. 
+
+\subsubsection{Marginal distributions}
+The first metric that will be evaluated will be the similarity of the univariate series with the real world data. Note that this similarity is not a pointwise similarity. In many relevant papers, the accuracy of a series predicition is calculated through metrics like the RMSE or the MAPE. However, these metrics require that the prediction try to get right the value at each timestep. If there is a delay of one timestep, or a "cloudy week" comes a week earlier or later the RMSE will give a very poor score even though the general behaviour is the same. That is why the approach taken here will be slightly different. The metrics used will be the following:
+\begin{itemize}
+    \item \textbf{Cramér von Mises criterion}: The Cramér von Mises criterion intriduced by \cite{cramer_28} measures the distance between two CDF. It is calculated like:
+    \begin{equation}
+        \omega^2=\int_{-\infty}^{\infty}\left[F_m\left(x\right)-F_e\left(x\right)\right]^2dF_e\left(x\right)
+    \end{equation}
+    Where $F_m\left(x\right)$ is the modelled empirical CDF and $F_e\left(x\right)$ is the observed empirical CDF.
+    \item \textbf{Kullback-Leibler divergence}: The KL divergence or relative entropy introduced in \cite{kullback_leibler_1951} is a statistical distance that measures how different a probability distribution is from another reference one. It is calculated like
+    \begin{equation}
+        D_{KL}\left(P||Q\right)=\sum_x P\left(x\right)\log{\left(\frac{P\left(x\right)}{Q\left(x\right)}\right)}
+    \end{equation}
+    where $P$ is the modelled probability distribution and Q is the reference probability distribution.
+    \item \textbf{ACF distance}: Even though the marginal distributions are by themselves a fundamental part of the closeness of the univariate series to reality, they are not the only one. Another key aspect of the series is its termporal self dependency, studied through the ACF of the correlation coefficient and the new correlation coefficient in the section called \nameref{sec:lagged-relationships}. The difference between the ACF of the $\xi$ metric of the empirical data and the model will be measured through a weighted root mean squared error, calculated as:
+    \begin{equation}
+        \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N w_k\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N w_k}}
+    \end{equation}
+    where $N$ is the number of periods for which the metric is calculated -- 72 in this case, $ACF_m$ is the model's $\xi$ ACF, $ACF_e$ is the empirical $\xi$ ACF and $w$ is the weighting factor, determined to be $w_k=ACF_e\left(k\right)$. This has been chosen so a higher weight is given to those lags with a higher empirical relevance. 
+    \item \textbf{Seasonal metrics}: The metrics above will be calculated on the overall sample but also on subsamples divided by yearly season and daily period, to ensure the fit not only on a global scale but also on specific periods. 
+\end{itemize}
+\subsubsection{Joint distributions}
+Now that it is clear how the marginal distributions will be assessed, it is time to look at how the dependence structure between the three series will be tested. There are several metrics that will be used for that purpose:
+\begin{itemize}
+    \item \textbf{Copula correlation matrix distance}: In the section regarding \nameref{sec:multivariate-analysis}, the correlation matrix of a gaussian copula representing the dependence structure between the series was calculated. The same matrix will be calculated for samples of each of the models. Then, the distance (CCMD) between both matrices will be calculated. This distance is calculated as:
+    \begin{equation}
+        CCMD=\sqrt{\sum_i\sum_j\left(a_{ij}-b_{ij}\right)^2}
+    \end{equation}
+    where $A=\{a_{ij}\}$ is the correlation matrix of the copula fitted to the modelled data and $B=\{b_{ij}\}$ is the correlation matrix shown in \autoref{table:copula-correlation-matrix}.
+    \item \textbf{CCF distance}: The cross correlation function distance is analogous to the autocorrelation function distance explained above, but for the $\xi$ cross correlation function instead of ACF.
+    \item \textbf{Seasonal metrics}: Similarly to the univariate case, the metrics above will be calculated on the whole period but also with seasonal differences and daily period differences.
+\end{itemize}
+
+\subsubsection{Extreme value analysis}
+A significantly important aspect of the models is their need to be particularly accurate on the extreme values. Periods of extreme wind or solar generation are particularly interesting to the grid, due to their displacement of other energy sources or their need of them. That is why the accuracy of the models on extreme values will be assessed through these metrics:
+\begin{itemize}
+    % \item \textbf{Anderson-Darling statistic}:
+    \item \textbf{Conditional Value at Risk}: The CVaR, usually used in financial risk management, measures what a certain value on average will be given that a certain threshold has been exceeded. It is calculated as 
+    \begin{equation}
+        \text{CVaR}_{\alpha}(x) = \mathbb{E} \left[X\mid X>\text{VaR}_{\alpha}\right]
+    \end{equation} 
+    with $\text{VaR}_{\alpha}$ being the Value at Risk for a given certainty. That is, the maximum value not exceeded with a probability $\alpha$. It is characterized as 
+    \begin{equation}
+        \text{VaR}_{\alpha}=\text{inf}\{x|F_X(x)\geq\alpha\}
+    \end{equation}
+    The assessment metric will be the difference between the CVaR calculated as 
+    \begin{equation}
+        \text{CVRD}=\frac{\text{CVaR}^m_{95\%}}{\text{CVaR}^e_{95\%}}-1
+    \end{equation}
+    where $\text{CVaR}^m_{95\%}$ is the CVaR at a 95\% level for the model and $\text{CVaR}^e_{95\%}$ is the empirical CVaR at a 95\% level.
+    \item \textbf{Tail dependence}: The tail dependence coefficient is a measure of the comovements of the tails of their distributions. It can be lower tail dependence or upper tail dependence, with the lower tail dependence calculated as 
+    \begin{equation}
+        \lambda_l=\lim_{q \to 0} P\left(X_m \leq F^{-1}_m(q) \mid X_e \leq F^{-1}_e(q)\right)  
+    \end{equation}
+    and the upper tail dependence coefficient being calculated as 
+    \begin{equation}
+        \lambda_u=\lim_{q \to 1} P\left(X_m > F^{-1}_m(q) \mid X_e > F^{-1}_e(q)\right)  
+    \end{equation}
+    with $F^{-1}_m$ being the inverse CDF for the model and $F^{-1}_e$ being the empirical inverse CDF.
+    \item \textbf{Return level}: The GEV function is a function often used to model the maxima of sequences of random variables. Its CDF is
+    \begin{equation}
+        P\left(GEV\left(\mu,\sigma,\xi\right)\leq x\right)=e^{-t\left(x\right)}
+    \end{equation}
+    with
+    \begin{equation}
+        t\left(x\right)\equiv 
+        \begin{cases} 
+        \left[ 1 + \xi \left( \frac{x - \mu}{\sigma} \right) \right]^{- \frac{1}{\xi}}, & \text{if } \xi \neq 0, \\
+        \exp\left( - \frac{x - \mu}{\sigma} \right), & \text{if } \xi = 0.
+        \end{cases}
+    \end{equation}
+    As it can be seen from the formulation above the distribution of maximum values depends on three variables, with $\xi$ governing the tail behaviour. Once the GEV distribution is fitted to the data, the return level can be estimated. The return level is the value expected to be exceeded on average once in a given period. If the 100 year return level of wind capacity factor is 0.95, that means that on average there will be one instance every 100 years where the capacity factor exceeds 0.95. The return level $z_T$ is calcualted as 
+    \begin{equation}
+        z_T=\mu+\frac{\sigma}{\xi}\left[\left(-\text{log}\left(1-\frac{1}{T}\right)\right)^{-\xi}-1\right]
+    \end{equation}
+    Thus, the weekly maxima will be obtained with the data, with which a GEV distribution will be fitted and a 10 year return level will be calculated. The assessment metric will be the percentage difference in return level calculated as 
+    \begin{equation}
+        \text{RLD}=\frac{z^m_{10}}{z^e_{10}}-1
+    \end{equation}
+    This will be calculated for both the maxima and the minima of the distributions. 
+\end{itemize}
+
+The extreme value assessment is particularly important for wind generation, rather than for solar generation as it is much more consistent. Therefore, these values will only be calculated for the wind series. 

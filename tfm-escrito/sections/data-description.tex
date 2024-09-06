@@ -115,6 +115,7 @@ In order to have a more quantitative view of these distributions, metrics relati
 Through these measures it can be seen how some of the intuitions obtained when looking at the time series plot of the different capacity factors were wrong. For example, the wind capacity factor is not the most volatile as it seemed, but in fact has the lowest standard deviation. This could be however due to the high variability of the solar profile, and taking away the seasonality of the three variables these metrics could be different.
 
 \subsubsection{Lagged relationships}
+\label{sec:lagged-relationships}
 Another key factor about the three series is their seasonality and how a given value at $t$ is influenced by past values at $t-1, t-2...$. In order to explore these relationships, two different metrics will be used. 
 
 The first one is the the autocorrelation. While correlation as expressed by the Pearson correlation coefficient is generally calculated like
@@ -174,6 +175,7 @@ For the solar PV it can be seen how on one extreme in winter the concentration o
 In \autoref{fig:kde-triple-daily} a similar representation for the KDE can be seen but for the split between night and day. For solar PV the plot is not very interesting, with the night having all its density at the zero point, with the day density having a slight peak at zero -- as the exact times for sunset and sunrise vary during the year and the period defined here as "day" can in fact have some night time -- and the already known one at 0.6. For solar thermal it can be seen how the peak at 0.9 is exclusively a day time fenomenon while the peak at 0.3 is a night time fenomenon, confirming the hypothesis that this was the power generated at night with the stored heat from the day. For the wind, it can be seen how the difference between day and night is practically negligible, with day exhibiting a slightly more "summer" like behaviour -- that is, slightly less volatile and lower mean. 
 
 \subsubsection{Multivariate analysis}
+\label{sec:multivariate-analysis}
 Up until this point every analysis has been performed on a per variable basis, examining their individual properties. However, when thinking about the true implications for the power grid it becomes clear that the joint characteristics are also fundamental. For a given wind and solar distributions, the consequences of the grid are not the same if peaks in both happen at the same time or if they complement each other. That is why the joint characteristics will be studied, and they will mainly be studied through cross correlation and through copula analysis. Some other analysis, like through Granger causality as outlined in \cite{granger_1969} were attempted, but no new relevant information that wasn't uncovered through cross correlation was found. 
 
 Cross correlation follows a principle very similar to the autocorrelation, but instead of measuring the correlation of a series with lagged versions of itself, the correlation of a variable with lagged versions of a different variable are measured. That way, something similar to the predictive value of the second variable on the first can be understood. Again, the two different correlation coefficients already explained were used. Note how for Person's correlation the relationship for $\left(X,Y\right)$ is the same as for $\left(Y,X\right)$. However, when using lagged values the correlation does depend on which variable is lagged. for the new correlation coefficient the directionality matters, as the effect of one variable on a second is not the same as that of the second on the first one. 
@@ -192,9 +194,9 @@ The similarity between the solar PV and solar thermal is clearly shown, with hig
 
 \textcolor{red}{INCLUDE SEASONAL CROSS LAGS?}
 
-The second method used to see how the three variables compare to each other will be using copulas. Copulas are multivariate functions used to model the dependence between several random variables. Consider the random vector $(X_1,X_2,X_3)$ representing the observations of capacity factor for solar PV, solar thermal and wind energy for a given point in time. The marginal CDF of each of the variables is represented as $F_i\left(x\right)=p\left(X_i\leq x\right)$, which when applied to the random vector yields the marginals $\left(U_1,U_2,U_3\right)=\left(F_1\left(X_1\right),F_2\left(X_2\right),F_3\left(X_3\right)\right)\in \left[0,1\right]^3$. The copula $C(\cdot)$ is the joint cumulative distribution function such that 
+The second method used to see how the three variables compare to each other will be using copulas. Copulas are multivariate functions used to model the dependence between several random variables. Consider the random vector $(X_1,X_2,X_3)$ representing the observations of capacity factor for solar PV, solar thermal and wind energy for a given point in time. The marginal CDF of each of the variables is represented as $F_i\left(x\right)=P\left(X_i\leq x\right)$, which when applied to the random vector yields the marginals $\left(U_1,U_2,U_3\right)=\left(F_1\left(X_1\right),F_2\left(X_2\right),F_3\left(X_3\right)\right)\in \left[0,1\right]^3$. The copula $C(\cdot)$ is the joint cumulative distribution function such that 
 \begin{equation}
-    C\left(u_1,u_2,u_3\right)=p\left(U_1\leq u_1,U_2\leq u_2,U_3\leq u_3\right)
+    C\left(u_1,u_2,u_3\right)=P\left(U_1\leq u_1,U_2\leq u_2,U_3\leq u_3\right)
 \end{equation}
 
 The copula contains all information on the dependence structure between the three series, while the marginal cumulative distribution functions contain all inforamtion on the marginal distribution of the variables. 
@@ -219,3 +221,6 @@ The correlation matrix of the gaussian copula can be seen in \autoref{table:copu
 \end{table}
 
 It can be seen how in the copula representation the strong positive correlation between both solar series and the negative correlation between wind and both solar series still stands. 
+
+% \subsubsection{Extreme value analysis}
+% \textcolor{red}{NECESSARY HERE(?)}
