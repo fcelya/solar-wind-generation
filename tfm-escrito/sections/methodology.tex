@@ -1,16 +1,72 @@
 \section{Methodology}
-In this section several points regarding the methodology used in the work will be presented. The general approach taken to modelling, as well as the models themselves will be explained. The metrics used to evaluate the goodness of fit of the different models will also be presented. 
-\subsection{Overview of modelling approach}
-Criteria to be considered
+In this section several points regarding the methodology used in the work will be presented. The general approach taken to modeling, as well as the models themselves will be explained. The metrics used to evaluate the goodness of fit of the different models will also be presented. 
 
+\subsection{Overview of modeling approach}
+In order to understand why the models that will be presented below have been chosen and why the evaluation metrics have been chosen, it is worth first taking a look at the requirements of the modeling task and the general criteria that determine what a good result is.
+
+\subsubsection{Modeling task characteristics}
+The general technical characteristics of the task, from the objectives and the time series characteristics already explored are the following:
+\begin{itemize}
+    \item \textbf{Modeling horizon}: The horizon to be modeled is of between 1 and 10 years, or between 8.760 and 87.600 hourly timesteps. 
+    \item \textbf{Available data}: The data available for the training and testing tasks consists of slightly below 10 years of data, or slightly below 87.600 observations. This data has been consistently recorded at a 1 hour timestep interval.
+    \item \textbf{Seasonality}: There has been found to be high seasonality, both at the daily and yearly frequencies. 
+    \item \textbf{Exogenous variables}: A certain predictive power of some series with respect to the others has been found. Thus the capacity of incorporating the use of exogenous variables or multivariate modeling aproaches are specially interesting. 
+    \item \textbf{Extreme values}: There is a special interest in having accurate modeling of the extreme values, specially in the wind capacity factor.
+    \item \textbf{Pointwise forecast}: The forecasts produced by the model can be pointwise predictions, there is no need to produce probabilistic forecasts for each timestep.
+\end{itemize}
+
+\subsubsection{Modeling criteria}
+Starting with the objectives already outlined in the section called \nameref{sec:objective-and-scope}, here these objectives will be broken down into more specific criteria that the best model must aim to meet in the best possible way. The specific characteristics the model must meet are the following:
+\begin{itemize}
+    \item \textbf{Seasonality}: The chosen models must be able of incorporating seasonality into its forecast. 
+    \item \textbf{Multiple variables}: The chosen models should be able to incorporate multiple variables, be it through a multivariate modeling, through historical exogenous variables and/or through future exogenous variables. Through the modeling task it will be made apparent wether incorporating the information of the other series helps in modeling a given series.
+    \item \textbf{Complex relationships}: The temporal relationships of a series with itself and the relationships of a series with the other variables are probably more complex than linear relationships. That is why a model capable of incorporating complex non linear temporal and intervariate relationships will probably have an advantage.
+    \item \textbf{Multiperiod modeling}: As it has already been mentioned, the modeling period will encompass between 8.760 and 87.600 timesteps. The model must be able to create such forecasts. But going further, if the prediction is created by autoregressively estimating the next step, there is a compounding in errors over time \cite{educing_error_propagation_long}. By estimating multiple timesteps in one prediction pass, the number of autoregressive steps can be reduced and with it the compounding of errors can be reduced too. Therefore, models with bigger single-step prediction window should have an advantage.
+    \item \textbf{Long and short term temporal relationships}: The model must be able to incorporate both long term and short term temporal relationships.
+    \item \textbf{Robustness}: The model must be resistant to overfitting, given the parameter size of some of the models and the number of available training datapoints. 
+    \item \textbf{Extreme value accuracy}: The model must be specially sensitive to extreme values, be it through the flexibility of incorporating a custom loss function or through its intrinsic characteristics.
+    \item \textbf{Computational efficiency}: Given the long modeling horizon, the model must be efficient both in prediction time and in memory used when training and when incorporating historical data in prediction.
+\end{itemize}
 \subsection{Models}
+Now that the criteria used to select potential models has been outlined, the different models that will be evaluated can be presented. These models have been divided by model family or type. Here below, the different model types and each of the models and their characteristics and main working principles are explained. 
+\subsubsection{Statistical models}
+These models are based on classical statistical methods to analyze and predict temporal series. They use techniques like regression analysis, autocorrelation and spectral analysis to model and forecast temporal variables. The ones that will be used here are:
+\begin{itemize}
+    \item \textbf{Linear Regression}: This is the most simple model and it will be used as a naive benchmark. It models a given capacity factor value for one of the series as a linear combination of several exogenous variables. In this case, those variables are the values of fourier sine and cosine terms, some lagged values of the given time series and some lagged values of other time series, which in this case will be the other capacity factors. The main parameters of the model are thus:
+    \begin{itemize}
+        \item Seasonal frequencies: That is the frequencies for which the fourier terms will be calculated. It can be daily, yearly, both, etc.
+        \item Fourier harmonics: For each of the seasonalities, several harmonics of fourier terms can be calculated, creating more nuanced patterns the more harmonics are added.
+        \item Autoregressive order: That is, what lags of the modeled series to incorporate.
+        \item Exogenous lags: That is, what lags of the other two series to incorporate. 
+    \end{itemize}
+    The mathematical formulation for the model thus is:
+    \begin{multline}
+        Y_t=\beta_0 + \sum_{\tau}\sum_{k}\left[\gamma_{\tau,k}\sin\left(\frac{2\pi k t}{\tau}\right) + \delta_{\tau,k}\cos\left(\frac{2\pi k t}{\tau}\right)\right] +\\+ \sum_l \phi_l Y_{t-l} + \sum_v\sum_p\theta_{v,p}X_{v,t-p} + \epsilon_t
+    \end{multline}
+    where $\tau$ is each of the seasonality periods, $k$ is each of the fourier harmonics, $l$ is each of the self lags, $v$ is each of the other two capacity factors and $p$ is each of the lags used for the two other capacity factors.
+    
+    This model opperates on several assumptions which are worth mentioning. The first is that all relationships -- those with the seasonal terms, with lagged values, with the other capacity factors, etc. -- are assumed to be linear. The error term $\epsilon_t$ is assumed to be independent and identically distributed (i.i.d.) with constant variance (homocedastic) and gaussian, although there is no evidence that this is true. 
+    \item \textbf{ARIMAX}: The AutoRegressive Integrated Moving Average with eXogenous variables model is an extension to the previous model. It incorporates both autoregressive and moving average components to the endogenous time series and allows for time  integration, which extends the purely autoregressive view in the previous model, as well as some exogneous variables. It provides a more complex representation of the relationship of the time series with its lagged values than the linear regression model presented above. To the previously presented parameter, these new ones are added:
+    \item \begin{itemize}
+        \item Integration order: This represents the number of times the endogenous time series is differentiated. 
+        \item Moving average order: That is, what moving average error terms are incorporated.
+    \end{itemize}  
+    The new model formulation is:
+    \begin{multline}
+        Y_t=-\left(\Delta^d Y_t - Y_t\right) + \beta_0 + \sum_{\tau}\sum_{k}\left[\gamma_{\tau,k}\sin\left(\frac{2\pi k t}{\tau}\right) + \delta_{\tau,k}\cos\left(\frac{2\pi k t}{\tau}\right)\right] +\\+ \sum_l \phi_l \Delta^d Y_{t-l} + \sum_q \theta_q \epsilon_{t-q} + \sum_v\sum_p\theta_{v,p}X_{v,t-p} + \epsilon_t
+    \end{multline}
+    where $d$ is the order of differentiation with $\Delta Y_t = Y_t - Y_{t-1}$ and $q$ is lags of the error term added for the moving average.
+\end{itemize}
+\subsubsection{Machine Learning models}
+\subsubsection{Neural Network models}
+\subsubsection{Transformer models}
 
 \subsection{Model training and validation (Maybe?)}
 
 \subsection{Evaluation metrics}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
 
-In order to best achieve this goal, the best performing model will have to be evaluated on different metrics, each corresponding to different attributes needed for correct whole picture modelling. These are the different attributes that will be tested and the metrics that will be used to test them. 
+In order to best achieve this goal, the best performing model will have to be evaluated on different metrics, each corresponding to different attributes needed for correct whole picture modeling. These are the different attributes that will be tested and the metrics that will be used to test them. 
 
 \subsubsection{Marginal distributions}
 The first metric that will be evaluated will be the similarity of the univariate series with the real world data. Note that this similarity is not a pointwise similarity. In many relevant papers, the accuracy of a series predicition is calculated through metrics like the RMSE or the MAPE. However, these metrics require that the prediction try to get right the value at each timestep. If there is a delay of one timestep, or a "cloudy week" comes a week earlier or later the RMSE will give a very poor score even though the general behaviour is the same. That is why the approach taken here will be slightly different. The metrics used will be the following:
@@ -70,6 +126,8 @@ A significantly important aspect of the models is their need to be particularly 
         \lambda_u=\lim_{q \to 1} P\left(X_m > F^{-1}_m(q) \mid X_e > F^{-1}_e(q)\right)  
     \end{equation}
     with $F^{-1}_m$ being the inverse CDF for the model and $F^{-1}_e$ being the empirical inverse CDF.
+
+    There will be two comparisons. The comparison of the tail dependence between each pair of modeled variables with that of the corresponding pair of empirical variables -- e.g. tail dependence between modeled solar PV and modeled wind and tail dependence between empirical solar PV and empirical wind -- and also the tail dependence between each modeled variable with its corresponding empirical varaiable -- e.g. tail dependence between modeled solar PV with empirical solar PV.  
     \item \textbf{Return level}: The GEV function is a function often used to model the maxima of sequences of random variables. Its CDF is
     \begin{equation}
         P\left(GEV\left(\mu,\sigma,\xi\right)\leq x\right)=e^{-t\left(x\right)}
@@ -79,7 +137,7 @@ A significantly important aspect of the models is their need to be particularly 
         t\left(x\right)\equiv 
         \begin{cases} 
         \left[ 1 + \xi \left( \frac{x - \mu}{\sigma} \right) \right]^{- \frac{1}{\xi}}, & \text{if } \xi \neq 0, \\
-        \exp\left( - \frac{x - \mu}{\sigma} \right), & \text{if } \xi = 0.
+        e^{\left( - \frac{x - \mu}{\sigma} \right)}, & \text{if } \xi = 0.
         \end{cases}
     \end{equation}
     As it can be seen from the formulation above the distribution of maximum values depends on three variables, with $\xi$ governing the tail behaviour. Once the GEV distribution is fitted to the data, the return level can be estimated. The return level is the value expected to be exceeded on average once in a given period. If the 100 year return level of wind capacity factor is 0.95, that means that on average there will be one instance every 100 years where the capacity factor exceeds 0.95. The return level $z_T$ is calcualted as 
