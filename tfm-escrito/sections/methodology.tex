@@ -47,7 +47,7 @@ These models are based on classical statistical methods to analyze and predict t
     
     This model opperates on several assumptions which are worth mentioning. The first is that all relationships -- those with the seasonal terms, with lagged values, with the other capacity factors, etc. -- are assumed to be linear. The error term $\epsilon_t$ is assumed to be independent and identically distributed (i.i.d.) with constant variance (homocedastic) and gaussian, although there is no evidence that this is true. 
     \item \textbf{ARIMAX}: The AutoRegressive Integrated Moving Average with eXogenous variables model is an extension to the previous model. It incorporates both autoregressive and moving average components to the endogenous time series and allows for time  integration, which extends the purely autoregressive view in the previous model, as well as some exogneous variables. It provides a more complex representation of the relationship of the time series with its lagged values than the linear regression model presented above. To the previously presented parameter, these new ones are added:
-    \item \begin{itemize}
+    \begin{itemize}
         \item Integration order: This represents the number of times the endogenous time series is differentiated. 
         \item Moving average order: That is, what moving average error terms are incorporated.
     \end{itemize}  
@@ -56,12 +56,17 @@ These models are based on classical statistical methods to analyze and predict t
         Y_t=-\left(\Delta^d Y_t - Y_t\right) + \beta_0 + \sum_{\tau}\sum_{k}\left[\gamma_{\tau,k}\sin\left(\frac{2\pi k t}{\tau}\right) + \delta_{\tau,k}\cos\left(\frac{2\pi k t}{\tau}\right)\right] +\\+ \sum_l \phi_l \Delta^d Y_{t-l} + \sum_q \theta_q \epsilon_{t-q} + \sum_v\sum_p\theta_{v,p}X_{v,t-p} + \epsilon_t
     \end{multline}
     where $d$ is the order of differentiation with $\Delta Y_t = Y_t - Y_{t-1}$ and $q$ is lags of the error term added for the moving average.
+    \item \textbf{VARMAX}: The Vector AutoRegressive Moving Average with eXogenous variables is a modification of the ARIMAX model, but without the integration component and turning the single variable endogenous variable into a vector variable. This model jointly predicts all capacity factor variables, directly creating the joint distribution. The model is formulated as:
+    \begin{multline}
+        Y_t= \beta_0 + \sum_{\tau}\sum_{k}\left[\gamma_{\tau,k}\sin\left(\frac{2\pi k t}{\tau}\right) + \delta_{\tau,k}\cos\left(\frac{2\pi k t}{\tau}\right)\right] +\\+ \sum_l \phi_l Y_{t-l} + \sum_q \theta_q \epsilon_{t-q} + \epsilon_t
+    \end{multline}
+    where $Y_t$ here is not a single variable datapoint but a three dimensional vector containing all three capacity factors. The coefficients are also vector coefficients.
 \end{itemize}
 \subsubsection{Machine Learning models}
 \subsubsection{Neural Network models}
 \subsubsection{Transformer models}
 
-\subsection{Model training and validation (Maybe?)}
+\subsection{Model training and validation}
 
 \subsection{Evaluation metrics}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
