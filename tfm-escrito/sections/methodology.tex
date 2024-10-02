@@ -92,7 +92,7 @@ Machine learning models are a class of models designed to learn more complex pat
     As it can be seen, the SVR is quite useful as it includes non-linear relationships, has built in robustness to overfitting and is quite scalable. However, it is quite sensitive to the choice of parameters -- mainly that of kernel, $C$ and $\epsilon$ -- and assumes the relationship between input space and prediction remains constant in time, so it is not that appropriate for non stationary time series. 
 
     In the implementation used in this work, the input space is equivalent to that of the classical statistical models, comprised of some lags of the data, some fourier decompositions at different levels and some lags of the other time series. 
-    \item \textbf{XGBoost}: eXtreme Gradient Boosting is a highly efficient and scalable implementation within the paradigm of decision trees. Decision trees are another ML framework where starting from a root node, the dataset or output space is split into two or more subsets based on a specific value of a selected feature. For example, a very simple example would be to say that on average the predicted solar capacity factor is 0.3 (root node). If it is daytime the predicted value is 0.6 and if it is nightime the predicted value is 0.0 (two subsequent nodes). This split can be further refined with more levels on different values of different features, providing a more accurate and non linear prediction based on the input values. Trees are built through an algorithm which at each node selects the feature that best separates the data based on a criterion such as entropy. This model is quite simple but allows for non-linearity and is very robust to different scales in input features. However, it can easily overfit on the training data and the results can be quite instable. 
+    \item \textbf{XGBoost}: eXtreme Gradient Boosting introduced by \cite{chen_guestrin_2016} is a highly efficient and scalable implementation within the paradigm of decision trees. Decision trees are another ML framework where starting from a root node, the dataset or output space is split into two or more subsets based on a specific value of a selected feature. For example, a very simple example would be to say that on average the predicted solar capacity factor is 0.3 (root node). If it is daytime the predicted value is 0.6 and if it is nightime the predicted value is 0.0 (two subsequent nodes). This split can be further refined with more levels on different values of different features, providing a more accurate and non linear prediction based on the input values. Trees are built through an algorithm which at each node selects the feature that best separates the data based on a criterion such as entropy. This model is quite simple but allows for non-linearity and is very robust to different scales in input features. However, it can easily overfit on the training data and the results can be quite instable. 
     
     Returning to XGBoost, this model builds sequential trees where each new tree corrects the errors of the previous one in what is known as an ensemble of trees. It also implements several improvements such as regularization, tree pruning or parallelization. The model thus builds a prediction like
     \begin{equation}
@@ -114,10 +114,59 @@ Machine learning models are a class of models designed to learn more complex pat
 \end{itemize}
 
 \subsubsection{Neural Network models}
+Neural networks are computational models inspired by the brain's morphology. They are formed by \textit{neurons}, which are the basic unit which take several weighted inputs, sums them and adds some bias and applies an activation function which provides the non linearities in the model. Many of these neurons are connected across several layers, and end up providing a final prediction. For each layer, the mathematical expression can be represented as
+\begin{equation}
+    A=\sigma\left(WX+B\right)
+\end{equation}
+where $A$ is the output of the layer, $X$ is the input vector, resulting from the previous layer or the input itself, $W$ is the weight vector, $B$ is the bias and $\sigma(\cdot)$ is the activation function to be applied elementwise to the resulting vector. This function can be a ReLU, tanh or sigmoid among others. 
 
+Neural networks have been shown to be universal approximators by \cite{hornik_stinchcombe_white_1989}, meaning that any arbitrary function can be perfectly approximated by a feedforward neural network with at least one hidden layer. In practice however there hardly is enough data to provide such an approximation and overfitting is quite easy due to the number of parameters. This has lead to the appearence of many different NN architectures, trying to adapt them to specific use cases. These are the NN models that have been implemented for this work. 
+\begin{itemize}
+    \item \textbf{LSTM}: Long-Short Term Memory NN are a specific architecture of NN that instead of using the previously explained neurons use a more complex type of basic unit called memory cells. These memory cells can maintain and update information over time using gates that control the flow of information. The basic structure of the LSTM can be seen in the following diagram:
+    \begin{figure}[ht]
+        \centering
+        \captionsetup{justification=centering}
+        \includegraphics[width=0.7\linewidth]{assets/LSTM_Cell.png}
+        \caption{LSTM memory cell}
+        \label{fig:lstm-memory-cell}
+    \end{figure}
+    In \autoref{fig:lstm-memory-cell}, $x_t$ is the input vector, $h_t$ is the hidden state vector and $c_t$ is the cell state vector. Each of the layers in the figure's legend or gates have a feedforward network architecture with its weights and biases. The forget gate decides what information to discard from the previous state, the input gate decides which pieces of new information to store in the current cell state and the output gate controls which pieces of information in the current cell state to output. The cell state remembers values over arbitrary time intervals. Over training, the parameters of the different gates are adjusted. 
+
+    LSTM networks can thus retain temporal relationships over arbitrary lengths. They were developed in \cite{hochreiter_schmidhuber_1997} as an alternative to Recurrent Neural Networks (RNN). These are a simpler NN architecture designed to handle sequential data, which through a series of feedback connections are allowed to retain information about previous states. RNN however have some computational issues commonly referred to as the vanishing gradient problem which prevents them from learning after a certain point. This issue is solved through the LSTM architecture. It also has some other quite useful characteristics such as also being able to model complex non linear relationships with more freedom than other classical ML models and can also provide multi step forecasting, allowing for modeling of a certain period in less steps. 
+
+    The input vector again contains lags of the modeled series and the other two series as well as fourier decomposition components. 
+
+    The main issue with LSTM is however its much higher computational complexity compared with simpler models, as well as needing large amounts of data and being more prone to overfitting than other simpler models. 
+    
+    \item \textbf{N-BEATS}: The Neural Basis Expansion Analysis for interpretable Time Series forecasting is another relatively new NN architecture focused on time series modeling through deep learning, mainly on the univariate case. Its architecture can be summarized through the following diagram obtained from the mentioned paper:
+    \begin{figure}[ht]
+        \centering
+        \captionsetup{justification=centering}
+        \includegraphics[width=\linewidth]{assets/nbeats-architecture.png}
+        \caption{N-BEATS architecture}
+        \label{fig:nbeats-architecture}
+    \end{figure}
+    Through \autoref{fig:nbeats-architecture} it can be seen how the model works. There are several stacks, each created by blocks of fully connected feedforward networks. Each block predicts a part of the forecast with the information from the lookback period. The fully connected stack in the block predicts both the forecast and the backcast -- data in the lookback period. The backcast is subtracted to the previously available lookback period, so each block tries to model the forecast from the residuals of the previous block in a very similar way to how each of the trees in the XGBoost predicts the error of the previous tree. The output of each of the blocks is summed to create the stack output, and all the stack's outputs is aggregated to create the final forecast. This architecture is supposed to automatically decompose the time series into different components like trend and seasonality in an interpretable way. This model has demonstrated state of the art performance in several time series benchmarks such as the M3 and M4. It is also domain agnostic, making no assumptions on stationarity or seasonality and it works well without any feature engineering. The training is also more efficient than for an LSTM, as the lack of recurrent feedback loops allows for parallelization of the training. It also allows for a multistep forecasting window. 
+    
+    \item \textbf{N-HiTS}: The Neural Hierarchical Interpolation for Time Series forecasting is another quite a recent architecture developed by \cite{challu_olivares_oreshkin_garza_2022}. It was developed with the explicit goal of modeling long term relationships in time series data in a more memory and computation efficient way. The architecture overview can be seen in the following diagram, obtained from the mentioned paper:
+    \begin{figure}[ht]
+        \centering
+        \captionsetup{justification=centering}
+        \includegraphics[width=\linewidth]{assets/nhits-architecture.png}
+        \caption{N-HiTS architecture}
+        \label{fig:nhits-architecture}
+    \end{figure}
+    As it can be seen in \autoref{fig:nhits-architecture}, the architecture is quite similar to the N-BEATS model with some added complexity. The model works first by sampling the historical window used in forecasting at different frequencies. Then, a series of MLP (feedforward NN) stacks are used in an ensemble way to forecast the following datapoint at each of the different forecasting frequencies. In the ensemble, each of the MLP stacks produces a prediction of the historic data which is substracted from the previous historic data, so each MLP block exclusively tries to approximate the residuals of the previous one -- very similarly to how each tree reduced the error of the previous tree in the XGBoost model. Then, the predictions across all frequencies are interpolated to provide a prediction for each of the minimal frequency datapoints. 
+    
+    This architecture allows each stack to focus on capturing the relationships at a different frequency, and it does it in a very efficient way, not really needing all datapoints for all relationships. This allows for very good performance in several long term time series as shown in the mentioned paper. Even if this is exclusively an univariate model, it has been shown to outperform several state of the art multivariate models. It remains to be seen however if following an exclusively univariate effect the cross relationships between all three series can be maintained.  
+\end{itemize}
 \subsubsection{Transformer models}
-
-\subsection{Model training and validation}
+Transformers are in reality also a type of deep learning or NN model. However it incorporates a series of new key components that make it different enough to merit its own category. Introduced by \cite{vaswani_2017} in the legendary \textit{Attention is All You Need} paper that sparked the LLM revolution, the transformer architecture is a NN architecture that incorporates a self-attention mechanism used to process traditional data. This self-attention mechanism is in simple terms a way of weighting the importance of different elements in a sequence relative to each other. This allows for a weighted sum of the input sequence focusing on relevant past information. It also contains other key components like the Positional Encoding, which is added to the input sequence to provide information about the position of each element in the such sequence. This general architecture is immensely flexible and has been applied successfully to many different problems, most notably to natural language generation. This basic model has also sparked a series of subsequent models with some modifications that make them specially suited for some tasks such as time series modeling. The architectures used in this work are:
+\begin{itemize}
+    \item \textbf{TFT}:
+    \item \textbf{Informer}:
+    \item \textbf{FEDFormer}:
+\end{itemize} 
 
 \subsection{Evaluation metrics}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
@@ -208,3 +257,5 @@ A significantly important aspect of the models is their need to be particularly 
 \end{itemize}
 
 The extreme value assessment is particularly important for wind generation, rather than for solar generation as it is much more consistent. Therefore, these values will only be calculated for the wind series. 
+
+\subsection{Model training and validation}
