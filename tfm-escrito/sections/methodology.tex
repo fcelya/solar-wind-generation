@@ -62,8 +62,59 @@ These models are based on classical statistical methods to analyze and predict t
     \end{multline}
     where $Y_t$ here is not a single variable datapoint but a three dimensional vector containing all three capacity factors. The coefficients are also vector coefficients.
 \end{itemize}
+
 \subsubsection{Machine Learning models}
+Machine learning models are a class of models designed to learn more complex patterns from data with less constraining assumptions and generally more parameters. Even if these models are quite general and are not specifically designed for time series modeling, they can be readily used for this purpose. For this specific use case, these models excel at capturing complex and non linear relationships that statistical methods may overlook, they can therefore outperformed the former methods when these characteristics are present or when data is highly non-stationary or with intricate dependencies. The ones that have been implemented are:
+\begin{itemize}
+    \item \textbf{SVM}: Support Vector Machines introduced in \cite{cortes_vladimir_vapnik_1995} are ML models that can be used for either classification or regression. They work by finding the optimal hyperplane that separates the datapoints into distinct classes or predicts values with the maximum margin. In the specific case of regression the model is known as Support Vector Regression (SVR). Its objective is to find a function $f(x)$ that deviates from the empirical values $y_i$ by at most a margin $\epsilon$ ensuring the model remains as flat as possible. That is, preventing overfitting. The function takes the form:
+    \begin{equation}
+        f(x)=w^T\phi(x)+b
+    \end{equation} 
+    where $w$ is the weight vector, $b$ is the bias term and $\phi(x)$ is a transformation that maps the input data into a higher-dimensional space. The SVR algorithm solves the following optimization problem:
+    \begin{equation}
+        \begin{aligned}
+            \min_{w,\xi_i,\xi_i^*} \quad & \frac{1}{2}\|w\|^2+C\sum_{i=1}^n\left(\xi_i+\xi_i^*\right)\\
+            \textrm{s.t.} \quad & y_i-f(x_i) \leq \epsilon+\xi_i\\
+            & f(x_i)-y_i \leq \epsilon + \xi_i^*\\
+            & \xi_i,\xi_i^*\geq 0
+        \end{aligned}
+    \end{equation}
+    where $\xi_i$ and $\xi_i^*$ are slack terms allowing for some flexibility in prediction errors and $C$ is the regularization parameter that controls the tradeoff between the flatness of the function and how well it fits the data. Solving the optimization problem provides:
+    \begin{equation}
+        f(x) = \sum_{i=1}^n\left(\alpha_i-\alpha_i^*\right)K(x_i,x)+b
+    \end{equation}
+    where $\alpha_i$ and $\alpha_i^*$ are the optimal lagrange multipliers corresponding to the slack variables $\xi_i$ and $\xi_i^*$ and $K(\cdot)$ is the Kernel function used to calculate the distance between predicted and empirical datapoints and which provides the needed non linearities to the function. In this case, the Radial Basis Function has been used with 
+    \begin{equation}
+        K(x_i,x_j)=e^{-\gamma\|x_i-x_j\|^2}
+    \end{equation}
+    where $\gamma$ controls the spread of the kernel.
+
+    As it can be seen, the SVR is quite useful as it includes non-linear relationships, has built in robustness to overfitting and is quite scalable. However, it is quite sensitive to the choice of parameters -- mainly that of kernel, $C$ and $\epsilon$ -- and assumes the relationship between input space and prediction remains constant in time, so it is not that appropriate for non stationary time series. 
+
+    In the implementation used in this work, the input space is equivalent to that of the classical statistical models, comprised of some lags of the data, some fourier decompositions at different levels and some lags of the other time series. 
+    \item \textbf{XGBoost}: eXtreme Gradient Boosting is a highly efficient and scalable implementation within the paradigm of decision trees. Decision trees are another ML framework where starting from a root node, the dataset or output space is split into two or more subsets based on a specific value of a selected feature. For example, a very simple example would be to say that on average the predicted solar capacity factor is 0.3 (root node). If it is daytime the predicted value is 0.6 and if it is nightime the predicted value is 0.0 (two subsequent nodes). This split can be further refined with more levels on different values of different features, providing a more accurate and non linear prediction based on the input values. Trees are built through an algorithm which at each node selects the feature that best separates the data based on a criterion such as entropy. This model is quite simple but allows for non-linearity and is very robust to different scales in input features. However, it can easily overfit on the training data and the results can be quite instable. 
+    
+    Returning to XGBoost, this model builds sequential trees where each new tree corrects the errors of the previous one in what is known as an ensemble of trees. It also implements several improvements such as regularization, tree pruning or parallelization. The model thus builds a prediction like
+    \begin{equation}
+        \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + f_t(x_i)
+    \end{equation}
+    where $\hat{y}_i^{(t)}$ is the prediction after $t$ trees and $f_t(\cdot)$ is the tree added at level $t$. Each individual tree is constructed optimizing an objective function which both minimizes the loss function between true and predicted value and also has a regularization term which prevents overfitting. The objective thus becomes
+    \begin{equation}
+        \min_\theta \sum_{i=1}^n L(y_i,\hat{y}_i) + \sum_{k=1}^K \Omega(f_k)
+    \end{equation}
+    with the regularization term for each tree $k$ being 
+    \begin{equation}
+        \Omega(f_k)=\gamma T + \frac{1}{2}\lambda\sum_{j=1}^{T}w_j^2
+    \end{equation}
+    with $T$ being the number of nodes in the tree, $w_j$ being the weight of leaf $j$ and $\gamma$ and $\lambda$ being regularization parameters.
+
+    This model has some of the same advantages like the ability of capturing non linear relationships and built in regularization, but it also allows for some features like custom loss functions.
+    
+    In the implementation used for the XGboost, the input space is again equivalent to that of the classical statistical models with some lags of the data, some fourier decompositions at different levels and some lags of the other time series. 
+\end{itemize}
+
 \subsubsection{Neural Network models}
+
 \subsubsection{Transformer models}
 
 \subsection{Model training and validation}
