@@ -3,6 +3,7 @@ lightning_logs/
 __pycache__/
 data
 results
+obsolete/
 
 
 *.pkl
