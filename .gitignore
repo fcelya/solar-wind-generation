@@ -26,3 +26,4 @@ obsolete/
 
 
 !tfm-escrito/assets/*.png
+!testing/*.pkl
