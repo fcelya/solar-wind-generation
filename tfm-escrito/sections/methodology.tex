@@ -182,9 +182,18 @@ Transformers are in reality also a type of deep learning or NN model. However it
     Altering the transformer to operate on the frequency domain also has as a consequence reducing the complexity further down even from the Informer to linear time and memory. 
     
     Appart from accentuating the benefits already mentioned in the Informer, in the paper it is demonstrated how the predicted distribution is closer to the ground truth distribution according to the Kolmogorov-Smirnov distribution test, which is a specially interesting characteristic given the work objectives and evaluation metrics explained in \autoref{s:evaluation-metrics}.
-\end{itemize} 
+\end{itemize}
 \subsubsection{Comparison}
+After having presented all model classes and the different models that will be implemented themselves, it can be useful to perform a quick comparison and an a priori judgement of which models should outperform the rest, even if all of them will be implemented and evaluated. 
 
+It can be seen how there is a very wide range of models from which to chose from -- many more than the ones presented here. It is worth noting how here only the base models have been analyzed, and no custom combinations between them have been explored. These combinations can be very useful in combining useful characteristics of two or more base models and creating more accurate predictions as shown in \cite{zou_yang_2004}.
+
+Out of all models here analyzed, it would seem like the most appropriate due to its intrinsic characteristics is the FEDFormer due to it being able to include a very long forecasting horizon and lookback periodin each step, combined with a reasonable robustness that allows it to maintain the capacity to learn long run complex patterns.
+
+All of these characteristics are also shared to a greater or lesser extent by the N-BEATS and N-HiTS, but the FEDFormer can be deployed in a multivariate setup, while N-HiTS and N-BEATS are exclusively univariate. This would force to include the information of the other series as exogenous variables, while a multivariate approach is more straightforward and potentially with less accumulated error for multi step ahead predictions.  
+
+The FEDFormer also allows for the use of specific loss functions that could be used to improve accuracy in extreme values. 
+% Roughly it can be seen how the different models can be placed along a complexity axis, from the classical statistical ones being the most simple and the transformer based ones being the most complex. In this complexity axis one can find high interpretability, robustness to overfitting, efficiency and ease of training and prediction on the simple end and capability to learn complex long run patterns, predict multiple steps ahead in one run
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
@@ -206,7 +215,7 @@ The first metric that will be evaluated will be the similarity of the univariate
     where $P$ is the modelled probability distribution and Q is the reference probability distribution.
     \item \textbf{ACF distance}: Even though the marginal distributions are by themselves a fundamental part of the closeness of the univariate series to reality, they are not the only one. Another key aspect of the series is its termporal self dependency, studied through the ACF of the correlation coefficient and the new correlation coefficient in the section called \nameref{sec:lagged-relationships}. The difference between the ACF of the $\xi$ metric of the empirical data and the model will be measured through a weighted root mean squared error, calculated as:
     \begin{equation}
-        \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N w_k\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N w_k}}
+        \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N |w_k|\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N |w_k|}}
     \end{equation}
     where $N$ is the number of periods for which the metric is calculated -- 72 in this case, $ACF_m$ is the model's $\xi$ ACF, $ACF_e$ is the empirical $\xi$ ACF and $w$ is the weighting factor, determined to be $w_k=ACF_e\left(k\right)$. This has been chosen so a higher weight is given to those lags with a higher empirical relevance. 
     \item \textbf{Seasonal metrics}: The metrics above will be calculated on the overall sample but also on subsamples divided by yearly season and daily period, to ensure the fit not only on a global scale but also on specific periods. 
