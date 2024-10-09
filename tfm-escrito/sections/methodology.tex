@@ -215,7 +215,7 @@ The first metric that will be evaluated will be the similarity of the univariate
     where $P$ is the modelled probability distribution and Q is the reference probability distribution.
     \item \textbf{ACF distance}: Even though the marginal distributions are by themselves a fundamental part of the closeness of the univariate series to reality, they are not the only one. Another key aspect of the series is its termporal self dependency, studied through the ACF of the correlation coefficient and the new correlation coefficient in the section called \nameref{sec:lagged-relationships}. The difference between the ACF of the $\xi$ metric of the empirical data and the model will be measured through a weighted root mean squared error, calculated as:
     \begin{equation}
-        \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N w_k\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N w_k}}
+        \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N |w_k|\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N |w_k|}}
     \end{equation}
     where $N$ is the number of periods for which the metric is calculated -- 72 in this case, $ACF_m$ is the model's $\xi$ ACF, $ACF_e$ is the empirical $\xi$ ACF and $w$ is the weighting factor, determined to be $w_k=ACF_e\left(k\right)$. This has been chosen so a higher weight is given to those lags with a higher empirical relevance. 
     \item \textbf{Seasonal metrics}: The metrics above will be calculated on the overall sample but also on subsamples divided by yearly season and daily period, to ensure the fit not only on a global scale but also on specific periods. 
