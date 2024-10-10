@@ -196,6 +196,7 @@ The FEDFormer also allows for the use of specific loss functions that could be u
 % Roughly it can be seen how the different models can be placed along a complexity axis, from the classical statistical ones being the most simple and the transformer based ones being the most complex. In this complexity axis one can find high interpretability, robustness to overfitting, efficiency and ease of training and prediction on the simple end and capability to learn complex long run patterns, predict multiple steps ahead in one run
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
+\textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
 
 In order to best achieve this goal, the best performing model will have to be evaluated on different metrics, each corresponding to different attributes needed for correct whole picture modeling. These are the different attributes that will be tested and the metrics that will be used to test them. 
@@ -218,7 +219,7 @@ The first metric that will be evaluated will be the similarity of the univariate
         \text{ACFD}=\sqrt{\frac{\sum_{k=0}^N |w_k|\left[ACF_m\left(k\right)-ACF_e\left(k\right)\right]^2}{\sum_{k=0}^N |w_k|}}
     \end{equation}
     where $N$ is the number of periods for which the metric is calculated -- 72 in this case, $ACF_m$ is the model's $\xi$ ACF, $ACF_e$ is the empirical $\xi$ ACF and $w$ is the weighting factor, determined to be $w_k=ACF_e\left(k\right)$. This has been chosen so a higher weight is given to those lags with a higher empirical relevance. 
-    \item \textbf{Seasonal metrics}: The metrics above will be calculated on the overall sample but also on subsamples divided by yearly season and daily period, to ensure the fit not only on a global scale but also on specific periods. 
+    % \item \textbf{Seasonal metrics}: The metrics above will be calculated on the overall sample but also on subsamples divided by yearly season and daily period, to ensure the fit not only on a global scale but also on specific periods. 
 \end{itemize}
 \subsubsection{Joint distributions}
 Now that it is clear how the marginal distributions will be assessed, it is time to look at how the dependence structure between the three series will be tested. There are several metrics that will be used for that purpose:
@@ -229,7 +230,7 @@ Now that it is clear how the marginal distributions will be assessed, it is time
     \end{equation}
     where $A=\{a_{ij}\}$ is the correlation matrix of the copula fitted to the modelled data and $B=\{b_{ij}\}$ is the correlation matrix shown in \autoref{table:copula-correlation-matrix}.
     \item \textbf{CCF distance}: The cross correlation function distance is analogous to the autocorrelation function distance explained above, but for the $\xi$ cross correlation function instead of ACF.
-    \item \textbf{Seasonal metrics}: Similarly to the univariate case, the metrics above will be calculated on the whole period but also with seasonal differences and daily period differences.
+    % \item \textbf{Seasonal metrics}: Similarly to the univariate case, the metrics above will be calculated on the whole period but also with seasonal differences and daily period differences.
 \end{itemize}
 
 \subsubsection{Extreme value analysis}
@@ -286,3 +287,104 @@ A significantly important aspect of the models is their need to be particularly 
 The extreme value assessment is particularly important for wind generation, rather than for solar generation as it is much more consistent. Therefore, these values will only be calculated for the wind series. 
 
 \subsection{Model training and validation}
+After having layed out the different evaluation metrics that will be used, the method used for training and validating the models will be presented. 
+
+A general train-test-validation split will be used. This approach splits the available data in three groups. The first will be used to train the models. The second will be used to test the models and iteratively improve these models, by checking for overfitting and evaluating different parameter setups. The validation data is left as a the final evaluation data, where the final metrics that will be presented are calculated. The metrics obtained in this group can be seen as the metrics that are to be expected of the models in a real world context after deployment. A split of 1 year validation data, 1 year testing data and the rest as training data has been chosen, as a 1 year prediction horizon is a long enough horizon to test the long run characteristics of the model and it contains values for all different seasons. 
+
+As it can be seen in the \nameref{s:evaluation-metrics} section there are many different evaluation metrics attempting to check for different characteristics of the model. Therefore, using a programatic approach to model creating through something like a gridsearch of parameters is not really useful, as it can be difficult to determine in an algorithmic way which results are better than others, as one model can have better results modeling extreme values while other can have better results in modeling cross relationships. Therefore, a manual approach to model improvement with the test set will be employed, and only the best overall model selected in a discretionary way will be evaluated on the validation set and will have its results presented in this work.
+
+Another thing worth mentioning is that no cross validation or bootstrapping methods will be used to evaluate the models. Although these approaches would give a more robust understanding of the validity of the model by being more resistant to anomalies in the test and validation sets, the amount of data available for training -- specially for the neural network and transformer based models -- is not enough in order to sacrifice even more for testing and validation purposes.
+
+As an alternative approach to cross validation and bootstrapping, the test and validation sets will be evaluated for anomalies. That is, they will be evaluated as if they were a prediction against the previous year. The results are the following:
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{rll}
+        \toprule
+        Solar PV & \multicolumn{2}{c}{Period} \\ 
+        \cmidrule(lr){2-3}
+            & Test & Validation \\
+        \midrule
+        Cramer von Mises & 29.34 & 9.48 \\
+        KL divergence & 0.0003 & 0.0004 \\
+        ACF$_\xi$ distance & 0.0127 & 0.0137 \\
+        \midrule
+        CCMD & 0.0112 & 0.0167 \\
+        CCF$_\xi^{Solar TH}$ distance & 0.0099 & 0.0338\\
+        CCF$_\xi^{Wind}$ distance & 0.0119 & 0.0372 \\
+        \midrule
+        CVaR$^+$ distance & -0.0297 & -0.0064 \\
+        % CVaR$^-$ distance & 0.8416 & -0.2067 \\
+        Tail dependence coefficient$^+$ & 0.3676 & 0.4703 \\
+        % Tail dependence coefficient$^-$ & 0.1119 & 0.1381 \\
+        Return level distance$^+$ & 0.0154 & -0.0248 \\
+        % Return level distance$^-$ & 0.0289 & -0.0661 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Evaluation metrics of the test and validation sets with respect to the previous year for solar PV}
+    \label{table:eval-metrics-test-validation-solar-pv}
+\end{table}
+
+At a first glance it can be seen how some metrics seem to be more consistent than others. The Cramer von Mises statistic for example exhibits what seems to be a great difference between one and the other year, while the KL divergence seems to be more reliable exhibiting a much lesser difference. These values will be useful as they represent a baseline of what a reasonable \textit{error} according to the different metrics would be. If when evaluating a model the metric is similar to the ones shown here, the predicted values can be approximated to be close enough to what a the real process would generate. 
+
+Note how for solar PV the metrics regarding the extreme values in the left tail have been left out, as the values here are very close to zero and thus these metrics are very noisy. The same will be done for solar TH. 
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{rll}
+        \toprule
+        Solar TH & \multicolumn{2}{c}{Period} \\ 
+        \cmidrule(lr){2-3}
+            & Test & Validation \\
+        \midrule
+        Cramer von Mises & 12.86 & 9.89 \\
+        KL divergence & 0.0102 & 0.0265 \\
+        ACF$_\xi$ distance & 0.0249 & 0.0162 \\
+        \midrule
+        CCMD & 0.0112 & 0.0167 \\
+        CCF$_\xi^{Solar PV}$ distance & 0.0151 & 0.0155 \\
+        CCF$_\xi^{Wind}$ distance & 0.0201 & 0.0229 \\
+        \midrule
+        CVaR$^+$ distance & 0.0732 & -0.1318 \\
+        % CVaR$^-$ distance & 0.8416 & -0.2067 \\
+        Tail dependence coefficient$^+$ & 0.3356 & 0.2968 \\
+        % Tail dependence coefficient$^-$ & 0.1119 & 0.1381 \\
+        Return level distance$^+$ & 0.2928 & -0.1504 \\
+        % Return level distance$^-$ & 0.0289 & -0.0661 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Evaluation metrics of the test and validation sets with respect to the previous year for solar TH}
+    \label{table:eval-metrics-test-validation-solar-th}
+\end{table}
+
+In \autoref{table:eval-metrics-test-validation-solar-th} the same metrics shown before but for solar TH can be seen. Again, these will be used as benchmarks for the modeling of solar thermal by the different models. Note how the CCMD metrics are the same, as the copula matrix is the same one for all three series, and the distance is thus also equivalent.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{rll}
+        \toprule
+        Wind & \multicolumn{2}{c}{Period} \\ 
+        \cmidrule(lr){2-3}
+            & Test & Validation \\
+        \midrule
+        Cramer von Mises & 9.48 & 5.01 \\
+        KL divergence & 0.0.0018 & 0.0018 \\
+        ACF$_\xi$ distance & 0.0602 & 0.0630 \\
+        \midrule
+        CCMD & 0.0112 & 0.0167 \\
+        CCF$_\xi^{Solar PV}$ distance & 0.0128 & 0.0111 \\
+        CCF$_\xi^{Solar TH}$ distance & 0.0136 & 0.0131 \\
+        \midrule
+        CVaR$^+$ distance & -0.0236 & -0.0016 \\
+        CVaR$^-$ distance & -0.2461 & 0.2123 \\
+        Tail dependence coefficient$^+$ & 0.0479 & 0.2443 \\
+        Tail dependence coefficient$^-$ & 0.1506 & 0.1119 \\
+        Return level distance$^+$ & 1.3618 & -0.0071 \\
+        Return level distance$^-$ & -13.5111 & -1.1904 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Evaluation metrics of the test and validation sets with respect to the previous year for wind}
+    \label{table:eval-metrics-test-validation-wind}
+\end{table}
+
+Finally in \autoref{table:eval-metrics-test-validation-wind} the same metrics that will be used as benchmarks for wind can be seen. Here, the metrics relating to the extremes in the negative tail have been included since for wind it does hold some interest to see whether the model accurately models periods of low wind generation.
