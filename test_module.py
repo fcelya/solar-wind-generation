@@ -6,9 +6,38 @@ from sklearn.neighbors import KernelDensity
 from copulas.univariate import GaussianKDE
 from copulas.multivariate import GaussianMultivariate
 import time
+from datetime import datetime
+import os.path
+import pickle as pkl
+
+def save_results(model:str, params:dict, experiment:dict, prediction:pd.DataFrame,model_objects:dict=None,save_path='testing'):
+    """
+    model: String. Name of the model.
+    params: Dictionary. Parameters used to characterize the model.
+    experiment: Dictionary. Keys are ['step_horizon':int,'full_horizon':int,'obs':pd.DataFrame]
+    prediction: pd.DataFrame. DataFrame of predicitons
+    """
+    results = {}
+    results['model'] = model
+    results['params'] = params
+    results['experiment'] = experiment
+    results['prediction'] = prediction
+    if model_objects: results['model_objects'] = model_objects
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    save_name = os.path.join(save_path,f"{model.lower()}_{timestamp}.pkl")
+    with open(save_name,'wb') as f:
+        pkl.dump(results,f)
+    return
+
+def load_results(path):
+    with open(path,'rb') as f:
+        results = pkl.load(f)
+    df_obs = results['experiment']['obs']
+    df_pred = results['prediction']
+    return df_obs, df_pred, results
 
 class Test():
-    def __init__(self, df_obs, df_pred,verbose=False):
+    def __init__(self, df_obs, df_pred,verbose=True):
         if set(df_obs.columns)!=set(df_pred.columns):
             raise ValueError("Column names of df_obs and df_pred must be the same")
         self.df_obs_full = df_obs.copy()
@@ -18,6 +47,8 @@ class Test():
             raise ValueError("df_pred and df_obs have incongruent indeces")
         self.columns = df_obs.columns
         self.v = verbose
+
+        self.testing_version = '001'
 
         self.get_results()
 
@@ -55,7 +86,7 @@ class Test():
         results['return_level_dist_neg'] = {c:self.results['return_level_dist'][(c,-1)] for c in self.columns}
         self.uniform_results = results
 
-    def create_results_df(self):
+    def get_results_df(self):
         self.get_uniform_results()
         df = pd.DataFrame(columns=self.columns)
         for k in self.uniform_results.keys():
@@ -63,6 +94,19 @@ class Test():
             df = df._append(s)
         self.results_df = df
         return df
+    
+    def save_test_results(self,name='',path='testing'):
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = os.path.join(path,f'test_{self.testing_version}_{name}_{timestamp}.pkl')
+        with open(file_name,'wb') as f:
+            pkl.dump(self.results,f)
+        return
+    
+    def load_test_results(self,file):
+        with open(file,'rb') as f:
+            results = pkl.load(f)
+        self.results = results
+        return
         
     def cramer_von_mises(self):
         results = {}
@@ -269,11 +313,24 @@ class Test():
     
 
 if __name__=='__main__':
-    import pickle as pkl
-    with open('testing/xgboost_multi_2024-10-04_20-55-34.pkl','rb') as f:
-        pred_results = pkl.load(f)
-    combined_obs = pred_results['results']['train']['solar_pv'].merge(pred_results['results']['train']['solar_th'],left_index=True,right_index=True).merge(pred_results['results']['train']['wind'],left_index=True,right_index=True)
-    combined_pred = pred_results['results']['test']['solar_pv'].merge(pred_results['results']['test']['solar_th'],left_index=True,right_index=True).merge(pred_results['results']['test']['wind'],left_index=True,right_index=True)
-    test = Test(combined_obs,combined_pred,verbose=True)
-    res_df = test.create_results_df()
+    def read_dataset(name='data/factor_capacidad.csv'):
+        df = pd.read_csv(name,index_col=0,parse_dates=True)
+        return df
+    df = read_dataset()
+    df_pred = df.iloc[-24*365*2:-24*365]
+    df_obs = df.iloc[-24*365*3:-24*365*2]
+    df_obs.index = df_pred.index
+    test = Test(df_obs,df_pred,verbose=True)
+    res_df = test.get_results_df()
+    test.save_test_results('test_set')
     print(res_df)
+
+
+    # import pickle as pkl
+    # with open('testing/xgboost_multi_2024-10-04_20-55-34.pkl','rb') as f:
+    #     pred_results = pkl.load(f)
+    # combined_obs = pred_results['results']['train']['solar_pv'].merge(pred_results['results']['train']['solar_th'],left_index=True,right_index=True).merge(pred_results['results']['train']['wind'],left_index=True,right_index=True)
+    # combined_pred = pred_results['results']['test']['solar_pv'].merge(pred_results['results']['test']['solar_th'],left_index=True,right_index=True).merge(pred_results['results']['test']['wind'],left_index=True,right_index=True)
+    # test = Test(combined_obs,combined_pred,verbose=True)
+    # res_df = test.get_results_df()
+    # print(res_df)

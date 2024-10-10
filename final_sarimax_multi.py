@@ -2,16 +2,16 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from math import ceil
-from test_module import test_results
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from scipy.stats import boxcox
 from scipy.special import inv_boxcox
 import warnings
-import xgboost as xgb
 from datetime import datetime
+import pickle as pkl
 from time import time
-from sera_loss import SERALossXGBoost
-from test_module import save_results, Test
 
+from test_module import save_results, Test
 
 warnings.filterwarnings('ignore')
 
@@ -69,24 +69,32 @@ def extend_df(df, new_y, freq='H'):
     new_df = new_df.asfreq('H')
     return new_df
 
+def invert_box_cox(df,lbc,column=0):
+    y_col = df.columns[column]
+    df[y_col] = inv_boxcox(df[y_col], lbc)
+
+
 STEP_HORIZON = 1
 FULL_HORIZON = 24*365
-LAGS=[1,2,3,4,12,24,24*2]
-LAGS_EXT=[1,2,3,4,12,24,24*2]
+
+LAGS=[24]
+LAGS_EXT=[1,2,3,4,24]
 FREQS=[24,24*365]
-LEVELS=[2,3]
+LEVELS=[2,4]
+ORDER=(4,1,4)
+
 
 start = time()
 df_wind = read_dataset(data='wind')
 df_solar_th = read_dataset(data='solar_th')
 df_solar_pv = read_dataset(data='solar_pv')
 
-# df_wind['wind'] = np.clip(df_wind['wind'], 0.0001, np.inf)
-# df_wind['wind'], lbc_eolica = boxcox(df_wind['wind'])
-# df_solar_th['solar_th'] = np.clip(df_solar_th['solar_th'], 0.0001, np.inf)
-# df_solar_th['solar_th'], lbc_solar_th = boxcox(df_solar_th['solar_th'])
-# df_solar_pv['solar_pv'] = np.clip(df_solar_pv['solar_pv'], 0.0001, np.inf)
-# df_solar_pv['solar_pv'], lbc_solar_pv = boxcox(df_solar_pv['solar_pv'])
+df_wind['wind'] = np.clip(df_wind['wind'], 0.0001, np.inf)
+df_wind['wind'], lbc_wind = boxcox(df_wind['wind'])
+df_solar_th['solar_th'] = np.clip(df_solar_th['solar_th'], 0.0001, np.inf)
+df_solar_th['solar_th'], lbc_solar_th = boxcox(df_solar_th['solar_th'])
+df_solar_pv['solar_pv'] = np.clip(df_solar_pv['solar_pv'], 0.0001, np.inf)
+df_solar_pv['solar_pv'], lbc_solar_pv = boxcox(df_solar_pv['solar_pv'])
 
 Y_full_train_wind = df_wind.iloc[:-FULL_HORIZON][['wind']]
 Y_full_test_wind = df_wind.iloc[-FULL_HORIZON:][['wind']]
@@ -95,39 +103,33 @@ Y_full_test_solar_th = df_solar_th.iloc[-FULL_HORIZON:][['solar_th']]
 Y_full_train_solar_pv = df_solar_pv.iloc[:-FULL_HORIZON][['solar_pv']]
 Y_full_test_solar_pv = df_solar_pv.iloc[-FULL_HORIZON:][['solar_pv']]
 
-MIN_P=5
-MAX_P=20
-# loss_class_eolica = SERALossXGBoost(Y_full_train_eolica['y'],MIN_P,MAX_P)
-LOSS_SOLAR_PV = 'reg:squarederror'
-LOSS_SOLAR_TH = 'reg:squarederror'
-LOSS_WIND = 'reg:squarederror' #loss_class_eolica.sera_loss
-
 print(f'Preparation: {time()-start:.1f} s')
 start = time()
+
 df_ext = pd.merge(Y_full_train_solar_th,Y_full_train_wind,how='outer',left_index=True,right_index=True)
 X_train_solar_pv = create_sarimax_df(Y_full_train_solar_pv, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_solar_pv = X_train_solar_pv[['solar_pv']]
 X_train_solar_pv = X_train_solar_pv.drop('solar_pv',axis=1)
-model_solar_pv = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_SOLAR_PV)
-model_solar_pv.fit(X_train_solar_pv, Y_train_solar_pv, verbose=True)
+model_solar_pv = ARIMA(Y_train_solar_pv['solar_pv'],exog=X_train_solar_pv,order=ORDER)
+fitted_model_solar_pv = model_solar_pv.fit()
 
 df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_wind,how='outer',left_index=True,right_index=True)
 X_train_solar_th = create_sarimax_df(Y_full_train_solar_th, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_solar_th = X_train_solar_th[['solar_th']]
 X_train_solar_th = X_train_solar_th.drop('solar_th',axis=1)
-model_solar_th = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_SOLAR_TH)
-model_solar_th.fit(X_train_solar_th, Y_train_solar_th, verbose=True)
+model_solar_th = ARIMA(Y_train_solar_th['solar_th'],exog=X_train_solar_th,order=ORDER)
+# fitted_model_solar_th = model_solar_th.fit()
 
 df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_solar_th,how='outer',left_index=True,right_index=True)
 X_train_wind = create_sarimax_df(Y_full_train_wind, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_wind = X_train_wind[['wind']]
 X_train_wind = X_train_wind.drop('wind',axis=1)
-model_wind = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_WIND)
-model_wind.fit(X_train_wind, Y_train_wind, verbose=True)
+model_wind = ARIMA(Y_train_wind['wind'],exog=X_train_wind,order=ORDER)
+# fitted_model_wind = model_wind.fit()
 
 print(f'Fit: {time()-start:.1f} s')
 start = time()
-print("#### Starting XGBoost prediction")
+print("#### Starting SARIMAX prediction")
 n_laps = ceil(FULL_HORIZON/STEP_HORIZON)
 repren=10
 repr_laps = n_laps//repren
@@ -145,50 +147,59 @@ for i in range(n_laps):
     future_Y_solar_pv = extend_df(Y_full_train_solar_pv, pd.Series(np.ones(horizon)))
     X_train_solar_pv = create_sarimax_df(future_Y_solar_pv, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
     X_train_solar_pv = X_train_solar_pv.drop('solar_pv',axis=1)
-    forecast = model_solar_pv.predict(X_train_solar_pv.iloc[-horizon:])
+    forecast = fitted_model_solar_pv.get_forecast(steps=horizon,exog=X_train_solar_pv.iloc[-horizon:])
+    forecast = forecast.predicted_mean
     Y_full_train_solar_pv = extend_df(Y_full_train_solar_pv, forecast)
+    # df_ext = pd.merge(Y_full_train_solar_th,Y_full_train_wind,how='outer',left_index=True,right_index=True)
+    X_train_solar_pv = create_sarimax_df(Y_full_train_solar_pv, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
+    X_train_solar_pv = X_train_solar_pv.drop('solar_pv',axis=1)
+    fitted_model_solar_pv = fitted_model_solar_pv.append(Y_full_train_solar_pv.iloc[-horizon:], exog=X_train_solar_pv.iloc[-horizon:], refit=False)
+    
     
     df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_wind,how='outer',left_index=True,right_index=True)
     future_Y_solar_th = extend_df(Y_full_train_solar_th, pd.Series(np.ones(horizon)))
     X_train_solar_th = create_sarimax_df(future_Y_solar_th, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
     X_train_solar_th = X_train_solar_th.drop('solar_th',axis=1)
-    forecast = model_solar_th.predict(X_train_solar_th.iloc[-horizon:])
+    forecast = fitted_model_solar_th.get_forecast(steps=horizon,exog=X_train_solar_th.iloc[-horizon:])
+    forecast = forecast.predicted_mean
     Y_full_train_solar_th = extend_df(Y_full_train_solar_th, forecast)
+    X_train_solar_th = create_sarimax_df(Y_full_train_solar_th, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
+    X_train_solar_th = X_train_solar_th.drop('solar_th',axis=1)
+    fitted_model_solar_th = fitted_model_solar_th.append(Y_full_train_solar_th.iloc[-horizon:], exog=X_train_solar_th.iloc[-horizon:], refit=False)
+    
 
     df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_solar_th,how='outer',left_index=True,right_index=True)
     future_Y_wind = extend_df(Y_full_train_wind, pd.Series(np.ones(horizon)))
     X_train_wind = create_sarimax_df(future_Y_wind, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
     X_train_wind = X_train_wind.drop('wind',axis=1)
-    forecast = model_wind.predict(X_train_wind.iloc[-horizon:])
+    forecast = fitted_model_wind.get_forecast(steps=horizon,exog=X_train_wind.iloc[-horizon:])
+    forecast = forecast.predicted_mean
     Y_full_train_wind = extend_df(Y_full_train_wind, forecast)
+    X_train_wind = create_sarimax_df(Y_full_train_wind, df_ext=df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
+    X_train_wind = X_train_wind.drop('wind',axis=1)
+    fitted_model_wind = fitted_model_wind.append(Y_full_train_wind.iloc[-horizon:], exog=X_train_wind.iloc[-horizon:], refit=False)
+    
 
 print(f'Prediction: {time()-start:.1f} s')
 
-# Y_full_train_wind = invert_box_cox(Y_full_train_wind,lbc_wind)
-# Y_full_test_wind = invert_box_cox(Y_full_test_wind,lbc_wind)
-# Y_full_train_solar_pv = invert_box_cox(Y_full_train_solar_pv,lbc_solar_pv)
-# Y_full_test_solar_pv = invert_box_cox(Y_full_test_solar_pv,lbc_solar_pv)
-# Y_full_train_solar_th = invert_box_cox(Y_full_train_solar_th,lbc_solar_th)
-# Y_full_test_solar_th = invert_box_cox(Y_full_test_solar_th,lbc_solar_th)
+Y_full_train_wind = invert_box_cox(Y_full_train_wind,lbc_wind)
+Y_full_test_wind = invert_box_cox(Y_full_test_wind,lbc_wind)
+Y_full_train_solar_pv = invert_box_cox(Y_full_train_solar_pv,lbc_solar_pv)
+Y_full_test_solar_pv = invert_box_cox(Y_full_test_solar_pv,lbc_solar_pv)
+Y_full_train_solar_th = invert_box_cox(Y_full_train_solar_th,lbc_solar_th)
+Y_full_test_solar_th = invert_box_cox(Y_full_test_solar_th,lbc_solar_th)
 
 df_obs = Y_full_test_solar_pv[['solar_pv']].merge(Y_full_test_solar_th[['solar_th']],left_index=True,right_index=True).merge(Y_full_test_wind[['wind']],left_index=True,right_index=True)
 df_pred = Y_full_train_solar_pv[['solar_pv']].merge(Y_full_train_solar_th[['solar_th']],left_index=True,right_index=True).merge(Y_full_train_wind[['wind']],left_index=True,right_index=True)
 df_pred = df_pred.iloc[-FULL_HORIZON:,:]
 
-model = 'xgboost'
+model = 'sarimax'
 params = {
     'lags': LAGS,
     'lags_ext': LAGS_EXT,
     'freqs': FREQS,
     'levels': LEVELS,
-    'n_estimators':8, 
-    'subsample':.7,
-    'max_depth':4,
-    'objective':{
-        'solar_pv': LOSS_SOLAR_PV,
-        'solar_th': LOSS_SOLAR_TH,
-        'wind': LOSS_WIND,
-        }
+    'order': ORDER
 }
 experiment = {
     'step_horizon': 1,
