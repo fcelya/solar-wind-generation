@@ -70,12 +70,12 @@ def extend_df(df, new_y, freq='H'):
     new_df = new_df.asfreq('H')
     return new_df
 
-def invert_box_cox(df,lbc,column=0):
-    y_col = df.columns[column]
+def invert_box_cox(df,lbc,y_col):
     df[y_col] = inv_boxcox(df[y_col], lbc)
+    return df
 
 STEP_HORIZON = 1
-FULL_HORIZON = 24*365
+FULL_HORIZON = 365*24
 
 LAGS=[1,2,3,4,24]
 LAGS_EXT=[1,2,3,4,24]
@@ -169,12 +169,12 @@ for i in range(n_laps):
 
 print(f'Prediction: {time()-start:.1f} s')
 
-Y_full_train_wind = invert_box_cox(Y_full_train_wind,lbc_wind)
-Y_full_test_wind = invert_box_cox(Y_full_test_wind,lbc_wind)
-Y_full_train_solar_pv = invert_box_cox(Y_full_train_solar_pv,lbc_solar_pv)
-Y_full_test_solar_pv = invert_box_cox(Y_full_test_solar_pv,lbc_solar_pv)
-Y_full_train_solar_th = invert_box_cox(Y_full_train_solar_th,lbc_solar_th)
-Y_full_test_solar_th = invert_box_cox(Y_full_test_solar_th,lbc_solar_th)
+Y_full_train_wind = invert_box_cox(Y_full_train_wind,lbc_wind,'wind')
+Y_full_test_wind = invert_box_cox(Y_full_test_wind,lbc_wind,'wind')
+Y_full_train_solar_pv = invert_box_cox(Y_full_train_solar_pv,lbc_solar_pv,'solar_pv')
+Y_full_test_solar_pv = invert_box_cox(Y_full_test_solar_pv,lbc_solar_pv,'solar_pv')
+Y_full_train_solar_th = invert_box_cox(Y_full_train_solar_th,lbc_solar_th,'solar_th')
+Y_full_test_solar_th = invert_box_cox(Y_full_test_solar_th,lbc_solar_th,'solar_th')
 
 df_obs = Y_full_test_solar_pv[['solar_pv']].merge(Y_full_test_solar_th[['solar_th']],left_index=True,right_index=True).merge(Y_full_test_wind[['wind']],left_index=True,right_index=True)
 df_pred = Y_full_train_solar_pv[['solar_pv']].merge(Y_full_train_solar_th[['solar_th']],left_index=True,right_index=True).merge(Y_full_train_wind[['wind']],left_index=True,right_index=True)
@@ -188,8 +188,8 @@ params = {
     'levels': LEVELS,
 }
 experiment = {
-    'step_horizon': 1,
-    'full_horizon': 24*365,
+    'step_horizon': STEP_HORIZON,
+    'full_horizon': FULL_HORIZON,
     'obs': df_obs
 }
 prediction = df_pred
@@ -202,6 +202,6 @@ model_objects = {
 save_results(model,params,experiment,prediction,model_objects)
 
 test = Test(df_obs,df_pred)
-test.save_test_results('sarimax')
+test.save_test_results('regression')
 df_test_results = test.get_results_df()
 print(df_test_results)

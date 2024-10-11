@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from math import ceil
-from test_module import test_results
 from scipy.stats import boxcox
 from scipy.special import inv_boxcox
 import warnings
@@ -74,7 +73,11 @@ FULL_HORIZON = 24*365
 LAGS=[1,2,3,4,12,24,24*2]
 LAGS_EXT=[1,2,3,4,12,24,24*2]
 FREQS=[24,24*365]
-LEVELS=[2,3]
+LEVELS=[2,4]
+
+N_ESTIMATORS = 8
+SUBSAMPLE = .7
+MAX_DEPTH = 4
 
 start = time()
 df_wind = read_dataset(data='wind')
@@ -108,21 +111,21 @@ df_ext = pd.merge(Y_full_train_solar_th,Y_full_train_wind,how='outer',left_index
 X_train_solar_pv = create_sarimax_df(Y_full_train_solar_pv, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_solar_pv = X_train_solar_pv[['solar_pv']]
 X_train_solar_pv = X_train_solar_pv.drop('solar_pv',axis=1)
-model_solar_pv = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_SOLAR_PV)
+model_solar_pv = xgb.XGBRegressor(n_estimators=N_ESTIMATORS, verbosity=2,subsample=SUBSAMPLE,max_depth=MAX_DEPTH,objective=LOSS_SOLAR_PV)
 model_solar_pv.fit(X_train_solar_pv, Y_train_solar_pv, verbose=True)
 
 df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_wind,how='outer',left_index=True,right_index=True)
 X_train_solar_th = create_sarimax_df(Y_full_train_solar_th, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_solar_th = X_train_solar_th[['solar_th']]
 X_train_solar_th = X_train_solar_th.drop('solar_th',axis=1)
-model_solar_th = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_SOLAR_TH)
+model_solar_th = xgb.XGBRegressor(n_estimators=N_ESTIMATORS, verbosity=2,subsample=SUBSAMPLE,max_depth=MAX_DEPTH,objective=LOSS_SOLAR_TH)
 model_solar_th.fit(X_train_solar_th, Y_train_solar_th, verbose=True)
 
 df_ext = pd.merge(Y_full_train_solar_pv,Y_full_train_solar_th,how='outer',left_index=True,right_index=True)
 X_train_wind = create_sarimax_df(Y_full_train_wind, df_ext, lags=LAGS, lags_ext=LAGS_EXT, freqs=FREQS, levels=LEVELS)
 Y_train_wind = X_train_wind[['wind']]
 X_train_wind = X_train_wind.drop('wind',axis=1)
-model_wind = xgb.XGBRegressor(n_estimators=8, verbosity=2,subsample=.7,max_depth=4,objective=LOSS_WIND)
+model_wind = xgb.XGBRegressor(n_estimators=N_ESTIMATORS, verbosity=2,subsample=SUBSAMPLE,max_depth=MAX_DEPTH,objective=LOSS_WIND)
 model_wind.fit(X_train_wind, Y_train_wind, verbose=True)
 
 print(f'Fit: {time()-start:.1f} s')
@@ -181,9 +184,9 @@ params = {
     'lags_ext': LAGS_EXT,
     'freqs': FREQS,
     'levels': LEVELS,
-    'n_estimators':8, 
-    'subsample':.7,
-    'max_depth':4,
+    'n_estimators':N_ESTIMATORS, 
+    'subsample':SUBSAMPLE,
+    'max_depth':MAX_DEPTH,
     'objective':{
         'solar_pv': LOSS_SOLAR_PV,
         'solar_th': LOSS_SOLAR_TH,
@@ -191,8 +194,8 @@ params = {
         }
 }
 experiment = {
-    'step_horizon': 1,
-    'full_horizon': 24*365,
+    'step_horizon': STEP_HORIZON,
+    'full_horizon': FULL_HORIZON,
     'obs': df_obs
 }
 prediction = df_pred
@@ -205,6 +208,6 @@ model_objects = {
 save_results(model,params,experiment,prediction,model_objects)
 
 test = Test(df_obs,df_pred)
-test.save_test_results('sarimax')
+test.save_test_results('xgboost')
 df_test_results = test.get_results_df()
 print(df_test_results)
