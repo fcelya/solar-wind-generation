@@ -178,7 +178,7 @@ df_obs = Y_full_test_solar_pv[['solar_pv']].merge(Y_full_test_solar_th[['solar_t
 df_pred = Y_full_train_solar_pv[['solar_pv']].merge(Y_full_train_solar_th[['solar_th']],left_index=True,right_index=True).merge(Y_full_train_wind[['wind']],left_index=True,right_index=True)
 df_pred = df_pred.iloc[-FULL_HORIZON:,:]
 
-model = 'sarimax'
+model = 'svm'
 params = {
     'lags': LAGS,
     'lags_ext': LAGS_EXT,

@@ -88,6 +88,9 @@ start = time()
 df_wind = read_dataset(data='wind')
 df_solar_th = read_dataset(data='solar_th')
 df_solar_pv = read_dataset(data='solar_pv')
+df_wind = df_wind.iloc[-365*24*4:]
+df_solar_pv = df_solar_pv.iloc[-365*24*2:]
+df_solar_th = df_solar_th.iloc[-365*24*2:]
 
 df_wind['wind'] = np.clip(df_wind['wind'], 0.0001, np.inf)
 df_wind['wind'], lbc_wind = boxcox(df_wind['wind'])
