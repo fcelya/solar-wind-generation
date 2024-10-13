@@ -22,7 +22,7 @@ obsolete
 *.toc
 *.prof
 *.png
-
+*ZoneIdentifier
 
 !tfm-escrito/assets/*.png
 !testing/*.pkl
