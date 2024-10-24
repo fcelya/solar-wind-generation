@@ -33,20 +33,24 @@ def create_fourier(df, freqs=[24,24*365], levels=None):
     return result_df
 
 def create_varmax_df(df, lags=[24*365], freqs=[24, 24*365]):
-    y_cols = df.columns
+    y_ = df.columns
     df = create_fourier(df, freqs=freqs)
     for l in lags:
-        for y in y_cols:
+        for y in y_:
             df[f'lag_{y}_{l}'] = df[y].shift(l)
     return df.dropna()
 
 def extend_df(df, new_y, freq='H'):
-    y_name = df.columns[0]
+    y_names = df.columns
     last_timestamp = df.index[-1]
     new_timestamps = pd.date_range(start=last_timestamp, periods=len(new_y)+1, freq=freq)[1:]
-    new_data = pd.DataFrame({y_name: new_y})
-    new_data.index=new_timestamps
-    new_df = pd.concat([df[[y_name]], new_data])
+    if type(new_y) == pd.Series:
+        new_data = pd.DataFrame(data={y_name: new_y.values for y_name in y_names}, index=new_timestamps)
+    elif type(new_y) == pd.DataFrame:
+        new_data = pd.DataFrame(data={y_name: new_y[y_name].values for y_name in y_names},index=new_timestamps)
+    else:
+        raise ValueError('new_y must be of type pd.Series or pd.DataFrame')
+    new_df = pd.concat([df[y_names], new_data])
     new_df = new_df.asfreq('H')
     return new_df
 
@@ -107,7 +111,7 @@ for i in range(n_laps):
     # print(results.endog.index[-5:])  # Model’s last index
     # print(Y_train.iloc[-horizon:].index)
     # # results.extend(Y_full_train.iloc[-horizon:])
-    results = results.append(Y_full_train.iloc[-horizon:], exog=X_train.iloc[-horizon:], refit=False)
+    results = results.append(Y_full_train.iloc[-horizon:].values, exog=X_train.iloc[-horizon:].values, refit=False)
 
 print(f'Prediction: {time()-start:.1f} s')
 

@@ -36,21 +36,61 @@ def load_results(path):
     df_pred = results['prediction']
     return df_obs, df_pred, results
 
+def compare_results(results_list):
+    res_dict = {}
+    for r in results_list:
+        name = r.split("_")
+        name = name[2]
+        if name in res_dict.keys():
+            name += '_' + r.split('_')[-1]
+        test = Test(results=r)
+        res_df = test.get_results_df()
+        res_dict[name] = res_df
+
+    keys = list(res_dict.keys())
+    y_cols = res_dict[keys[0]].columns
+    created_dataframes = False
+    complete_dataframes = {}
+    for k in res_dict.keys():
+        for y_col in y_cols:
+            if not created_dataframes:
+                complete_dataframes[y_col] = res_dict[k][[y_col]].rename(columns={
+                    y_col: k
+                })
+            else:
+                complete_dataframes[y_col] = complete_dataframes[y_col].merge(res_dict[k][[y_col]].rename(columns={y_col: k}), left_index=True, right_index=True)
+        
+        created_dataframes = True
+    
+    rank_dfs = {}
+    for y_col in y_cols:
+        rank_dfs[y_col] = complete_dataframes[y_col].abs().rank(axis=1, ascending=True)
+        rank_dfs[y_col].loc['total'] = rank_dfs[y_col].sum()
+        rank_dfs[y_col].loc['total_rank'] = rank_dfs[y_col].loc['total'].rank(ascending=True)
+
+    return rank_dfs
+
 class Test():
-    def __init__(self, df_obs, df_pred,verbose=True):
-        if set(df_obs.columns)!=set(df_pred.columns):
-            raise ValueError("Column names of df_obs and df_pred must be the same")
-        self.df_obs_full = df_obs.copy()
-        self.df_pred = df_pred.copy()
-        self.df_obs = df_obs[df_obs.index.isin(set(df_pred.index))]
-        if len(self.df_obs) != len(self.df_pred):
-            raise ValueError("df_pred and df_obs have incongruent indeces")
-        self.columns = df_obs.columns
+    def __init__(self, df_obs=None, df_pred=None,results=None,verbose=True):
         self.v = verbose
-
         self.testing_version = '001'
+        
+        if df_obs is not None and df_pred is not None:
+            if set(df_obs.columns)!=set(df_pred.columns):
+                raise ValueError("Column names of df_obs and df_pred must be the same")
+            self.df_obs_full = df_obs.copy()
+            self.df_pred = df_pred.copy()
+            self.df_obs = df_obs[df_obs.index.isin(set(df_pred.index))]
+            if len(self.df_obs) != len(self.df_pred):
+                raise ValueError("df_pred and df_obs have incongruent indeces")
+            self.columns = df_obs.columns
 
-        self.get_results()
+            self.get_results()
+        elif results is not None:
+            self.load_test_results(results)
+            self.columns = list(self.results['cramer_von_mises'].keys())
+        else:
+            raise ValueError("Either df_obs and df_pred must be provided or results must be provided. The first option takes priority over the second one")
 
     def get_results(self):
         if self.v: t1 = time.time()
@@ -103,8 +143,13 @@ class Test():
         return
     
     def load_test_results(self,file):
-        with open(file,'rb') as f:
-            results = pkl.load(f)
+        if type(file) == str:
+            with open(file,'rb') as f:
+                results = pkl.load(f)
+        elif type(file) == dict:
+            results = file
+        else:
+            raise ValueError("'file' must be either a str containing the path to the results file or a dict with the contents of the file")
         self.results = results
         return
         
@@ -313,17 +358,22 @@ class Test():
     
 
 if __name__=='__main__':
-    def read_dataset(name='data/factor_capacidad.csv'):
-        df = pd.read_csv(name,index_col=0,parse_dates=True)
-        return df
-    df = read_dataset()
-    df_pred = df.iloc[-24*365*2:-24*365]
-    df_obs = df.iloc[-24*365*3:-24*365*2]
-    df_obs.index = df_pred.index
-    test = Test(df_obs,df_pred,verbose=True)
-    res_df = test.get_results_df()
-    test.save_test_results('test_set')
-    print(res_df)
+    comparison_list = ['testing/test_001_sarimax_2024-10-14_03-26-20.pkl','testing/test_001_svm_2024-10-11_13-38-25.pkl','testing/test_001_xgboost_2024-10-11_01-52-25.pkl','testing/test_001_test_set_2024-10-10_15-54-10.pkl','testing/test_001_validation_set_2024-10-10_15-51-29.pkl']
+    res = compare_results(comparison_list)
+    for k in res.keys():
+        print(res[k])
+
+    # def read_dataset(name='data/factor_capacidad.csv'):
+    #     df = pd.read_csv(name,index_col=0,parse_dates=True)
+    #     return df
+    # df = read_dataset()
+    # df_pred = df.iloc[-24*365*2:-24*365]
+    # df_obs = df.iloc[-24*365*3:-24*365*2]
+    # df_obs.index = df_pred.index
+    # test = Test(df_obs,df_pred,verbose=True)
+    # res_df = test.get_results_df()
+    # test.save_test_results('test_set')
+    # print(res_df)
 
 
     # import pickle as pkl
