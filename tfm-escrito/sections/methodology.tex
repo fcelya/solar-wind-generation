@@ -215,7 +215,7 @@ By integrating this function overa all $t$ the $SERA$ is obtained
     SERA=\int_0^1 SER_t dt
 \end{equation}
 
-In this case the relevance function $\phi(\cdot)$ has been chosen to be the same as the one used in the referenced paper. It is an interpolation 
+In this case the relevance function $\phi(\cdot)$ is heavily inspired on the one used in the referenced paper. It is a Cubic Hermite spline. This is a curve where each segment is a third order polynomial specified by the value and first order derivative at each of the end points. Two intermediate points are chosen according to upper and lower chosen percentiles. For example, the $y$ values for the 10th and 90th percentile values are chosen. These values will be $x$ values for the $\phi(\cdot)$ function with a 0 first degree derivative and 0 or 1 $y$ value, depending on whether the $SERA$ function has been specified to focus on the lower or upper extreme values. If the the model is to focus on the upper extreme values, the 90th percentile will have a $y$ value of 1 and the 10th a value of 0. Furthermore, the 0 and 1 points -- as these are the theoretical minimum and maximum values for the capacity factor -- are determined to have a 0 derivative and a 1 or 0 $y$ value, again depending on whether this is the upper or lower $SERA$. 
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
 \textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
