@@ -5,6 +5,7 @@ In this section several points regarding the methodology used in the work will b
 In order to understand why the models that will be presented below have been chosen and why the evaluation metrics have been chosen, it is worth first taking a look at the requirements of the modeling task and the general criteria that determine what a good result is.
 
 \subsubsection{Modeling task characteristics}
+\label{s:modeling-task-characteristics}
 The general technical characteristics of the task, from the objectives and the time series characteristics already explored are the following:
 \begin{itemize}
     \item \textbf{Modeling horizon}: The horizon to be modeled is of between 1 and 10 years, or between 8.760 and 87.600 hourly timesteps. 
@@ -182,6 +183,8 @@ Transformers are in reality also a type of deep learning or NN model. However it
     Altering the transformer to operate on the frequency domain also has as a consequence reducing the complexity further down even from the Informer to linear time and memory. 
     
     Appart from accentuating the benefits already mentioned in the Informer, in the paper it is demonstrated how the predicted distribution is closer to the ground truth distribution according to the Kolmogorov-Smirnov distribution test, which is a specially interesting characteristic given the work objectives and evaluation metrics explained in \autoref{s:evaluation-metrics}.
+
+    \item \textbf{iTransformer}: \textcolor{red}{COMPLETE SECTION}
 \end{itemize}
 \subsubsection{Comparison}
 After having presented all model classes and the different models that will be implemented themselves, it can be useful to perform a quick comparison and an a priori judgement of which models should outperform the rest, even if all of them will be implemented and evaluated. 
@@ -194,6 +197,25 @@ All of these characteristics are also shared to a greater or lesser extent by th
 
 The FEDFormer also allows for the use of specific loss functions that could be used to improve accuracy in extreme values. 
 % Roughly it can be seen how the different models can be placed along a complexity axis, from the classical statistical ones being the most simple and the transformer based ones being the most complex. In this complexity axis one can find high interpretability, robustness to overfitting, efficiency and ease of training and prediction on the simple end and capability to learn complex long run patterns, predict multiple steps ahead in one run
+
+\subsection{Loss functions}
+\label{s:loss-functions}
+As previously mentioned, one of the main concerns with long horizon models used to predict solar and wind generation -- even more so in the case of wind -- is its ability to accurately model the extreme values of the generation distribution. The reasoning for this was already explained in  subsection \nameref{s:modeling-task-characteristics}. 
+
+One way of enabling models to better approximate these values is through the loss function used to train them. The loss function is a mathematical function that measures how well a model's predictions align with the actual values. It quantifies the errors of the model and guides the learning process, as the model will try to minimize this loss function. Some commonly used loss functions are the Root Mean Squared Error, the Mean Absolute Error or the Kullback-Leibler Divergence for example. The choice of the loss function guides the finally optimal model and thus its performance. A possibility that will be tested in this work is whether modifying the standard loss function to one that penalizes more heavily errors in the extremes can lead to a model with better performance in extreme value metrics. The loss function that will be used for this is the Squared Error Relevance Area introduced in \cite{silva_ribeiro_moniz_2022}.
+\subsubsection{SERA}
+The Squared Error Relevance Function is a loss function that tries to give a bigger emphasis to errors commited in the extremes while still accounting for the performance in the rest of the distribution, thus preventing a severe bias from occurring. 
+
+Given a set of points $\mathcal{D}=\{\langle x_i,y_i\rangle\}^N_{i=1}$ and a relevance function $\phi :\mathcal{Y} \rightarrow \{0,1\}$ defined for the target variable $Y$. Consider the subset $\mathcal{D}^t\subseteq \mathcal{D}$ defined as $\mathcal{D}^t=\{\langle x_i, y_i\rangle \in \mathcal{D} | \phi(y_i)\geq t\}$ the Squared Error Relevance with respect to a given cutoff $t$ $(SER_t)$ is defined as 
+\begin{equation}
+    SER_t=\sum_{y_i \in \mathcal{D}^t}(\hat{y}_i-y_i)^2
+\end{equation}
+By integrating this function overa all $t$ the $SERA$ is obtained
+\begin{equation}
+    SERA=\int_0^1 SER_t dt
+\end{equation}
+
+In this case the relevance function $\phi(\cdot)$ has been chosen to be the same as the one used in the referenced paper. It is an interpolation 
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
 \textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
