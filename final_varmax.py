@@ -139,7 +139,7 @@ experiment = {
 }
 prediction = df_pred
 model_objects = {
-    'joint': results,
+    'joint': None,
 }
 
 save_results(model,params,experiment,prediction,model_objects)

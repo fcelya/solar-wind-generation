@@ -216,9 +216,9 @@ experiment = {
 }
 prediction = df_pred
 model_objects = {
-    'solar_pv': fitted_model_solar_pv,
-    'solar_th': fitted_model_solar_th,
-    'wind': fitted_model_wind,
+    'solar_pv': None,
+    'solar_th': None,
+    'wind': None,
 }
 
 save_results(model,params,experiment,prediction,model_objects)

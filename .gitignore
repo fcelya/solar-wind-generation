@@ -27,5 +27,5 @@ obsolete
 !tfm-escrito/assets/*.png
 !testing/*.pkl
 
-testing/sarimax_*.pkl
-testing/varmax_*.pkl
+testing/sarimax_2024-10-14_03-25-38.pkl
+testing/test_001_varmax_2024-10-24_14-00-52.pkl
