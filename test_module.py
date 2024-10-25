@@ -68,7 +68,24 @@ def compare_results(results_list):
         rank_dfs[y_col].loc['total'] = rank_dfs[y_col].sum()
         rank_dfs[y_col].loc['total_rank'] = rank_dfs[y_col].loc['total'].rank(ascending=True)
 
-    return rank_dfs
+    return complete_dataframes, rank_dfs
+
+def create_test_from_results(path):
+    name = os.path.split(path)
+    name = name[-1]
+    name = name.split('_')
+    final_name = []
+    for i in range(3):
+        try:
+            int(name[i][:4])
+            break
+        except Exception as e:
+            final_name.append(name[i])
+    name = '_'.join(final_name)
+    df_obs, df_pred, results = load_results(path)
+    test = Test(df_obs=df_obs,df_pred=df_pred)
+    test.save_test_results(name=name)
+    return
 
 class Test():
     def __init__(self, df_obs=None, df_pred=None,results=None,verbose=True):
@@ -358,10 +375,20 @@ class Test():
     
 
 if __name__=='__main__':
-    comparison_list = ['testing/test_001_sarimax_2024-10-14_03-26-20.pkl','testing/test_001_svm_2024-10-11_13-38-25.pkl','testing/test_001_xgboost_2024-10-11_01-52-25.pkl','testing/test_001_test_set_2024-10-10_15-54-10.pkl','testing/test_001_validation_set_2024-10-10_15-51-29.pkl']
-    res = compare_results(comparison_list)
-    for k in res.keys():
-        print(res[k])
+    files = [
+        'testing/autoitransformer_multivariate_2024-10-24_15-01-37.pkl',
+        'testing/informer_univariate_2024-10-13_02-44-15.pkl',
+        'testing/itransformer_multivariate_2024-10-24_14-11-54.pkl',
+        'testing/nbeats_univariate_2024-10-11_22-37-32.pkl',
+        'testing/nhits_univariate_2024-10-11_12-37-56.pkl',
+    ]
+    for f in files:
+        create_test_from_results(f)
+    #### Compare results
+    # comparison_list = ['testing/test_001_sarimax_2024-10-14_03-26-20.pkl','testing/test_001_svm_2024-10-11_13-38-25.pkl','testing/test_001_xgboost_2024-10-11_01-52-25.pkl','testing/test_001_test_set_2024-10-10_15-54-10.pkl','testing/test_001_validation_set_2024-10-10_15-51-29.pkl']
+    # res = compare_results(comparison_list)
+    # for k in res.keys():
+    #     print(res[k])
 
     # def read_dataset(name='data/factor_capacidad.csv'):
     #     df = pd.read_csv(name,index_col=0,parse_dates=True)

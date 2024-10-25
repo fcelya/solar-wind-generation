@@ -29,6 +29,7 @@ Starting with the objectives already outlined in the section called \nameref{sec
     \item \textbf{Computational efficiency}: Given the long modeling horizon, the model must be efficient both in prediction time and in memory used when training and when incorporating historical data in prediction.
 \end{itemize}
 \subsection{Models}
+\label{s:models}
 Now that the criteria used to select potential models has been outlined, the different models that will be evaluated can be presented. These models have been divided by model family or type. Here below, the different model types and each of the models and their characteristics and main working principles are explained. 
 \subsubsection{Statistical models}
 These models are based on classical statistical methods to analyze and predict temporal series. They use techniques like regression analysis, autocorrelation and spectral analysis to model and forecast temporal variables. The ones that will be used here are:
@@ -216,6 +217,8 @@ By integrating this function overa all $t$ the $SERA$ is obtained
 \end{equation}
 
 In this case the relevance function $\phi(\cdot)$ is heavily inspired on the one used in the referenced paper. It is a Cubic Hermite spline. This is a curve where each segment is a third order polynomial specified by the value and first order derivative at each of the end points. Two intermediate points are chosen according to upper and lower chosen percentiles. For example, the $y$ values for the 10th and 90th percentile values are chosen. These values will be $x$ values for the $\phi(\cdot)$ function with a 0 first degree derivative and 0 or 1 $y$ value, depending on whether the $SERA$ function has been specified to focus on the lower or upper extreme values. If the the model is to focus on the upper extreme values, the 90th percentile will have a $y$ value of 1 and the 10th a value of 0. Furthermore, the 0 and 1 points -- as these are the theoretical minimum and maximum values for the capacity factor -- are determined to have a 0 derivative and a 1 or 0 $y$ value, again depending on whether this is the upper or lower $SERA$. 
+
+Note how many of the models mentioned in the \nameref{s:models} section are able to work with custom loss functions. However, to analyze whether a custom loss function helps in improving model accuracy for extreme values it is not necessary to retrain all models with this loss function. A single model will be trained with this loss function and its results will be compared to those obtained with the baseline loss function (MAE). The chosen model for the analysis has been the XGBoost given its ease of training and simplicity. In order to implement the $SERA$ loss function for the XGBoost library, functions defining its gradient and hessian have been created.
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
 \textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
