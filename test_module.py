@@ -10,6 +10,9 @@ from datetime import datetime
 import os.path
 import pickle as pkl
 
+import warnings
+warnings.filterwarnings('ignore')
+
 def save_results(model:str, params:dict, experiment:dict, prediction:pd.DataFrame,model_objects:dict=None,save_path='testing'):
     """
     model: String. Name of the model.
@@ -39,13 +42,31 @@ def load_results(path):
 def compare_results(results_list):
     res_dict = {}
     for r in results_list:
-        name = r.split("_")
-        name = name[2]
+        name = os.path.split(r)
+        name = name[-1]
+        name = name.split('_')
+        final_name = []
+        for i in range(2,5):
+            try:
+                int(name[i][:4])
+                break
+            except Exception as e:
+                final_name.append(name[i])
+        name = "_".join(final_name)
         if name in res_dict.keys():
             name += '_' + r.split('_')[-1]
         test = Test(results=r)
         res_df = test.get_results_df()
         res_dict[name] = res_df
+
+    # for r in results_list:
+    #     name = r.split("_")
+    #     name = name[2]
+    #     if name in res_dict.keys():
+    #         name += '_' + r.split('_')[-1]
+    #     test = Test(results=r)
+    #     res_df = test.get_results_df()
+    #     res_dict[name] = res_df
 
     keys = list(res_dict.keys())
     y_cols = res_dict[keys[0]].columns
@@ -85,6 +106,71 @@ def create_test_from_results(path):
     df_obs, df_pred, results = load_results(path)
     test = Test(df_obs=df_obs,df_pred=df_pred)
     test.save_test_results(name=name)
+    return
+
+def create_latex_tables(df_comp, df_rank, separator=6, path='testing'):
+    float_format_comp = lambda x: f'{x:.4g}'
+    float_format_rank = lambda x: f'({x:.0f})'
+    table_values = {
+        'solar_pv':['cramer_von_mises', 'kl_divergence', 'acf_dist_xi', 
+       'ccmd', 'ccf_dist_solar_th_xi', 'ccf_dist_wind_xi',
+       'cvar_pos', 'tail_dependence_coef_pos', 'return_level_dist_pos','total'],
+        'solar_th':['cramer_von_mises', 'kl_divergence', 'acf_dist_xi', 
+       'ccmd', 'ccf_dist_solar_pv_xi', 'ccf_dist_wind_xi',
+       'cvar_pos', 'tail_dependence_coef_pos', 'return_level_dist_pos','total'],
+       'wind':['cramer_von_mises', 'kl_divergence', 'acf_dist_xi',
+       'ccmd', 'ccf_dist_solar_pv_xi', 'ccf_dist_solar_th_xi', 
+       'cvar_pos', 'cvar_neg', 'tail_dependence_coef_pos',
+       'tail_dependence_coef_neg', 'return_level_dist_pos',
+       'return_level_dist_neg','total'],
+    }
+    table_index_dict = {
+        'cramer_von_mises':'Cramer von Mises',
+        'kl_divergence':'KL divergence',
+        'acf_dist_xi':'ACF$_\\xi$ distance',
+        'ccmd':'CCMD',
+        'ccf_dist_solar_pv_xi':'CCF$_\\xi^{Solar PV}$ distance',
+        'ccf_dist_solar_th_xi':'CCF$_\\xi^{Solar TH}$ distance',
+        'ccf_dist_wind_xi':'CCF$_\\xi^{Wind}$ distance',
+        'cvar_pos':'CVaR$^+$ distance',
+        'cvar_neg':'CVaR$^-$ distance',
+        'tail_dependence_coef_pos':'Tail dependence coefficient$^+$',
+        'tail_dependence_coef_neg':'Tail dependence coefficient$^-$',
+        'return_level_dist_pos':'Return level distance$^-$',
+        'return_level_dist_neg':'Return level distance$^+$',
+        'total':'Total',
+    }
+    table_columns_dict = {
+        'validation_set':'Benchmark',
+        'regression':'Regression',
+        'sarimax':'SARIMAX',
+        'varmax':'VARMAX',
+        'svm':'SVM',
+        'xgboost':'XGBoost',
+        'nbeats_univariate':'N-BEATS',
+        'nhits_univariate':'N-HiTS',
+        'timemixer_multivariate':'TimeMixer',
+        'informer_univariate':'Informer',
+        'itransformer_multivariate':'iTransformer',
+    }
+    for k in df_comp.keys():
+        tvalues = table_values[k]
+
+        df_comp_clean = df_comp[k].loc[df_comp[k].index.isin(tvalues),:]
+        df_comp_clean = df_comp_clean.rename(columns=table_columns_dict, index=table_index_dict).reset_index().rename(columns={'index':''})
+        df_comp_clean_1 = df_comp_clean.iloc[:,:separator]
+        df_comp_clean_2 = df_comp_clean.iloc[:,separator:]
+        
+        df_rank_clean = df_rank[k].loc[df_rank[k].index.isin(tvalues),:]
+        df_rank_clean = df_rank_clean.rename(columns=table_columns_dict, index=table_index_dict).reset_index().rename(columns={'index':''})
+        df_rank_clean_1 = df_rank_clean.iloc[:,:separator]
+        df_rank_clean_2 = df_rank_clean.iloc[:,separator:]
+
+        df_comp_clean_1.to_csv(os.path.join(path,f"comp_df_{k}_1.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_comp_clean_2.to_csv(os.path.join(path,f"comp_df_{k}_2.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_rank_clean_1.to_csv(os.path.join(path,f"rank_df_{k}_1.csv"),sep='&', float_format=float_format_rank,index=False)
+        df_rank_clean_2.to_csv(os.path.join(path,f"rank_df_{k}_2.csv"),sep='&', float_format=float_format_rank,index=False)
+        
     return
 
 class Test():
@@ -307,7 +393,7 @@ class Test():
         if self.v: print("Calculated cvar")
         return results
 
-    def _calc_tdc(self, series1, series2, tail=1, q=0.05):
+    def _calc_tdc(self, series1, series2, tail=1, q=0.1):
         if len(series1) != len(series2):
             raise ValueError(f"Length of series 1 and series 2 must be the same, currently it is {len(series1)} and {len(series2)}")
         # Convert to ranks for empirical copula
@@ -376,19 +462,33 @@ class Test():
 
 if __name__=='__main__':
     files = [
-        'testing/autoitransformer_multivariate_2024-10-24_15-01-37.pkl',
-        'testing/informer_univariate_2024-10-13_02-44-15.pkl',
-        'testing/itransformer_multivariate_2024-10-24_14-11-54.pkl',
-        'testing/nbeats_univariate_2024-10-11_22-37-32.pkl',
-        'testing/nhits_univariate_2024-10-11_12-37-56.pkl',
+        'testing/tft_univariate_2024-10-26_01-52-31.pkl',
     ]
     for f in files:
         create_test_from_results(f)
-    #### Compare results
-    # comparison_list = ['testing/test_001_sarimax_2024-10-14_03-26-20.pkl','testing/test_001_svm_2024-10-11_13-38-25.pkl','testing/test_001_xgboost_2024-10-11_01-52-25.pkl','testing/test_001_test_set_2024-10-10_15-54-10.pkl','testing/test_001_validation_set_2024-10-10_15-51-29.pkl']
-    # res = compare_results(comparison_list)
-    # for k in res.keys():
-    #     print(res[k])
+    # # ## Compare results
+    # comparison_list = [
+    #     'testing/test_001_autoitransformer_multivariate_2024-10-25_02-00-32.pkl',
+    #     'testing/test_001_itransformer_multivariate_2024-10-25_02-02-12.pkl',
+    #     ]
+    # comparison_list = [
+    #     'testing/test_001_validation_set_2024-10-10_15-51-29.pkl',
+    #     'testing/test_001_regression_2024-10-12_01-34-06.pkl',
+    #     'testing/test_001_sarimax_2024-10-14_03-26-20.pkl',
+    #     'testing/test_001_varmax_2024-10-24_14-00-52.pkl',
+    #     'testing/test_001_svm_2024-10-11_13-38-25.pkl',
+    #     'testing/test_001_xgboost_2024-10-11_01-52-25.pkl',
+    #     # 'lstm',
+    #     'testing/test_001_nbeats_univariate_2024-10-25_02-02-55.pkl',
+    #     'testing/test_001_nhits_univariate_2024-10-25_02-03-41.pkl',
+    #     'testing/test_001_timemixer_multivariate_2024-10-25_20-13-02.pkl',
+    #     # 'tft',
+    #     'testing/test_001_informer_univariate_2024-10-25_02-01-21.pkl',
+    #     # 'fedformer',
+    #     'testing/test_001_itransformer_multivariate_2024-10-25_02-02-12.pkl',
+    # ]
+    # comp_df, rank_df = compare_results(comparison_list)
+    # create_latex_tables(comp_df, rank_df)
 
     # def read_dataset(name='data/factor_capacidad.csv'):
     #     df = pd.read_csv(name,index_col=0,parse_dates=True)
