@@ -108,7 +108,7 @@ def create_test_from_results(path):
     test.save_test_results(name=name)
     return
 
-def create_latex_tables(df_comp, df_rank, separator=6, path='testing'):
+def create_latex_tables(df_comp, df_rank, separator=7, path='testing'):
     float_format_comp = lambda x: f'{x:.4g}'
     float_format_rank = lambda x: f'({x:.0f})'
     table_values = {
@@ -136,8 +136,8 @@ def create_latex_tables(df_comp, df_rank, separator=6, path='testing'):
         'cvar_neg':'CVaR$^-$ distance',
         'tail_dependence_coef_pos':'Tail dependence coefficient$^+$',
         'tail_dependence_coef_neg':'Tail dependence coefficient$^-$',
-        'return_level_dist_pos':'Return level distance$^-$',
-        'return_level_dist_neg':'Return level distance$^+$',
+        'return_level_dist_pos':'Return level distance$^+$',
+        'return_level_dist_neg':'Return level distance$^-$',
         'total':'Total',
     }
     table_columns_dict = {
@@ -150,6 +150,8 @@ def create_latex_tables(df_comp, df_rank, separator=6, path='testing'):
         'nbeats_univariate':'N-BEATS',
         'nhits_univariate':'N-HiTS',
         'timemixer_multivariate':'TimeMixer',
+        'fedformer_univariate':'FEDFormer',
+        'tft_univariate':'TFT',
         'informer_univariate':'Informer',
         'itransformer_multivariate':'iTransformer',
     }
@@ -162,14 +164,16 @@ def create_latex_tables(df_comp, df_rank, separator=6, path='testing'):
         df_comp_clean_2 = df_comp_clean.iloc[:,separator:]
         
         df_rank_clean = df_rank[k].loc[df_rank[k].index.isin(tvalues),:]
+        if 'total' in df_rank_clean.index:
+            df_rank_clean.loc['total',:] = df_rank_clean.loc[df_rank_clean.index!='total',:].sum()
         df_rank_clean = df_rank_clean.rename(columns=table_columns_dict, index=table_index_dict).reset_index().rename(columns={'index':''})
         df_rank_clean_1 = df_rank_clean.iloc[:,:separator]
         df_rank_clean_2 = df_rank_clean.iloc[:,separator:]
 
-        df_comp_clean_1.to_csv(os.path.join(path,f"comp_df_{k}_1.csv"),sep='&', float_format=float_format_comp,index=False)
-        df_comp_clean_2.to_csv(os.path.join(path,f"comp_df_{k}_2.csv"),sep='&', float_format=float_format_comp,index=False)
-        df_rank_clean_1.to_csv(os.path.join(path,f"rank_df_{k}_1.csv"),sep='&', float_format=float_format_rank,index=False)
-        df_rank_clean_2.to_csv(os.path.join(path,f"rank_df_{k}_2.csv"),sep='&', float_format=float_format_rank,index=False)
+        df_comp_clean_1.to_csv(os.path.join(path,f"comp_df_sera_{k}_1.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_comp_clean_2.to_csv(os.path.join(path,f"comp_df_sera_{k}_2.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_rank_clean_1.to_csv(os.path.join(path,f"rank_df_sera_{k}_1.csv"),sep='&', float_format=float_format_rank,index=False)
+        df_rank_clean_2.to_csv(os.path.join(path,f"rank_df_sera_{k}_2.csv"),sep='&', float_format=float_format_rank,index=False)
         
     return
 
@@ -461,11 +465,13 @@ class Test():
     
 
 if __name__=='__main__':
-    files = [
-        'testing/tft_univariate_2024-10-26_01-52-31.pkl',
-    ]
-    for f in files:
-        create_test_from_results(f)
+    # files = [
+    #     'testing/fedformer_univariate_2024-10-26_13-46-59.pkl',
+    # ]
+    # for f in files:
+    #     create_test_from_results(f)
+
+
     # # ## Compare results
     # comparison_list = [
     #     'testing/test_001_autoitransformer_multivariate_2024-10-25_02-00-32.pkl',
@@ -482,13 +488,18 @@ if __name__=='__main__':
     #     'testing/test_001_nbeats_univariate_2024-10-25_02-02-55.pkl',
     #     'testing/test_001_nhits_univariate_2024-10-25_02-03-41.pkl',
     #     'testing/test_001_timemixer_multivariate_2024-10-25_20-13-02.pkl',
-    #     # 'tft',
+    #     'testing/test_001_tft_univariate_2024-10-26_03-54-39.pkl',
     #     'testing/test_001_informer_univariate_2024-10-25_02-01-21.pkl',
-    #     # 'fedformer',
+    #     'testing/test_001_fedformer_univariate_2024-10-26_15-56-39.pkl',
     #     'testing/test_001_itransformer_multivariate_2024-10-25_02-02-12.pkl',
     # ]
-    # comp_df, rank_df = compare_results(comparison_list)
-    # create_latex_tables(comp_df, rank_df)
+    comparison_list = [
+        'testing/test_001_xgboost_2024-10-11_01-52-25.pkl',
+        'testing/test_001_xgboost_sera_minus_2024-10-26_16-22-52.pkl',
+        'testing/test_001_xgboost_sera_plus_2024-10-26_15-12-41.pkl',
+    ]
+    comp_df, rank_df = compare_results(comparison_list)
+    create_latex_tables(comp_df, rank_df)
 
     # def read_dataset(name='data/factor_capacidad.csv'):
     #     df = pd.read_csv(name,index_col=0,parse_dates=True)

@@ -124,21 +124,21 @@ where $A$ is the output of the layer, $X$ is the input vector, resulting from th
 
 Neural networks have been shown to be universal approximators by \cite{hornik_stinchcombe_white_1989}, meaning that any arbitrary function can be perfectly approximated by a feedforward neural network with at least one hidden layer. In practice however there hardly is enough data to provide such an approximation and overfitting is quite easy due to the number of parameters. This has lead to the appearence of many different NN architectures, trying to adapt them to specific use cases. These are the NN models that have been implemented for this work. 
 \begin{itemize}
-    \item \textbf{LSTM}: Long-Short Term Memory NN are a specific architecture of NN that instead of using the previously explained neurons use a more complex type of basic unit called memory cells. These memory cells can maintain and update information over time using gates that control the flow of information. The basic structure of the LSTM can be seen in the following diagram:
-    \begin{figure}[ht]
-        \centering
-        \captionsetup{justification=centering}
-        \includegraphics[width=0.7\linewidth]{assets/LSTM_Cell.png}
-        \caption{LSTM memory cell}
-        \label{fig:lstm-memory-cell}
-    \end{figure}
-    In \autoref{fig:lstm-memory-cell}, $x_t$ is the input vector, $h_t$ is the hidden state vector and $c_t$ is the cell state vector. Each of the layers in the figure's legend or gates have a feedforward network architecture with its weights and biases. The forget gate decides what information to discard from the previous state, the input gate decides which pieces of new information to store in the current cell state and the output gate controls which pieces of information in the current cell state to output. The cell state remembers values over arbitrary time intervals. Over training, the parameters of the different gates are adjusted. 
+    % \item \textbf{LSTM}: Long-Short Term Memory NN are a specific architecture of NN that instead of using the previously explained neurons use a more complex type of basic unit called memory cells. These memory cells can maintain and update information over time using gates that control the flow of information. The basic structure of the LSTM can be seen in the following diagram:
+    % \begin{figure}[ht]
+    %     \centering
+    %     \captionsetup{justification=centering}
+    %     \includegraphics[width=0.7\linewidth]{assets/LSTM_Cell.png}
+    %     \caption{LSTM memory cell}
+    %     \label{fig:lstm-memory-cell}
+    % \end{figure}
+    % In \autoref{fig:lstm-memory-cell}, $x_t$ is the input vector, $h_t$ is the hidden state vector and $c_t$ is the cell state vector. Each of the layers in the figure's legend or gates have a feedforward network architecture with its weights and biases. The forget gate decides what information to discard from the previous state, the input gate decides which pieces of new information to store in the current cell state and the output gate controls which pieces of information in the current cell state to output. The cell state remembers values over arbitrary time intervals. Over training, the parameters of the different gates are adjusted. 
 
-    LSTM networks can thus retain temporal relationships over arbitrary lengths. They were developed in \cite{hochreiter_schmidhuber_1997} as an alternative to Recurrent Neural Networks (RNN). These are a simpler NN architecture designed to handle sequential data, which through a series of feedback connections are allowed to retain information about previous states. RNN however have some computational issues commonly referred to as the vanishing gradient problem which prevents them from learning after a certain point. This issue is solved through the LSTM architecture. It also has some other quite useful characteristics such as also being able to model complex non linear relationships with more freedom than other classical ML models and can also provide multi step forecasting, allowing for modeling of a certain period in less steps. 
+    % LSTM networks can thus retain temporal relationships over arbitrary lengths. They were developed in \cite{hochreiter_schmidhuber_1997} as an alternative to Recurrent Neural Networks (RNN). These are a simpler NN architecture designed to handle sequential data, which through a series of feedback connections are allowed to retain information about previous states. RNN however have some computational issues commonly referred to as the vanishing gradient problem which prevents them from learning after a certain point. This issue is solved through the LSTM architecture. It also has some other quite useful characteristics such as also being able to model complex non linear relationships with more freedom than other classical ML models and can also provide multi step forecasting, allowing for modeling of a certain period in less steps. 
 
-    The input vector again contains lags of the modeled series and the other two series as well as fourier decomposition components. 
+    % The input vector again contains lags of the modeled series and the other two series as well as fourier decomposition components. 
 
-    The main issue with LSTM is however its much higher computational complexity compared with simpler models, as well as needing large amounts of data and being more prone to overfitting than other simpler models. 
+    % The main issue with LSTM is however its much higher computational complexity compared with simpler models, as well as needing large amounts of data and being more prone to overfitting than other simpler models. 
     
     \item \textbf{N-BEATS}: The Neural Basis Expansion Analysis for interpretable Time Series forecasting is another relatively new NN architecture focused on time series modeling through deep learning, mainly on the univariate case. Its architecture can be summarized through the following diagram obtained from the mentioned paper:
     \begin{figure}[ht]
@@ -238,7 +238,17 @@ By integrating this function overa all $t$ the $SERA$ is obtained
 
 In this case the relevance function $\phi(\cdot)$ is heavily inspired on the one used in the referenced paper. It is a Cubic Hermite spline. This is a curve where each segment is a third order polynomial specified by the value and first order derivative at each of the end points. Two intermediate points are chosen according to upper and lower chosen percentiles. For example, the $y$ values for the 10th and 90th percentile values are chosen. These values will be $x$ values for the $\phi(\cdot)$ function with a 0 first degree derivative and 0 or 1 $y$ value, depending on whether the $SERA$ function has been specified to focus on the lower or upper extreme values. If the the model is to focus on the upper extreme values, the 90th percentile will have a $y$ value of 1 and the 10th a value of 0. Furthermore, the 0 and 1 points -- as these are the theoretical minimum and maximum values for the capacity factor -- are determined to have a 0 derivative and a 1 or 0 $y$ value, again depending on whether this is the upper or lower $SERA$. 
 
-Note how many of the models mentioned in the \nameref{s:models} section are able to work with custom loss functions. However, to analyze whether a custom loss function helps in improving model accuracy for extreme values it is not necessary to retrain all models with this loss function. A single model will be trained with this loss function and its results will be compared to those obtained with the baseline loss function (MAE). The chosen model for the analysis has been the XGBoost given its ease of training and simplicity. In order to implement the $SERA$ loss function for the XGBoost library, functions defining its gradient and hessian have been created.
+In order to have a more intuitive understanding of how this custom loss function works and how it affects the predictions of the model, one can look at the small experiment presented in \autoref{fig:sera-loss-visauzliation}. For this quick demonstration, a sample problem has been created. A set of points have been distributed following a quadratic function. An XGBoost model has been trained to predict the $y$ value of the points based on the $x$ value. However, instead of the usual quadratic error loss, a SERA loss function with a relevance function which disregards the bottom 30\% of the data has been chosen. The bottom 30\% is given a relevance of 0, the top 60\% is given a relevance of 1 and the values in between are given a relevance based on the spline fit between those percentiles. As it can be seen, the XGBoost focuses only on the top 70\% of the data, completely disregarding the datapoints at the bottom. 
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.7\linewidth]{assets/sera-loss-visualization.png}
+    \caption{Visualization of the SERA loss and its effects}
+    \label{fig:sera-loss-visualization}
+\end{figure}
+In this toy example it may seem like introducing the SERA loss only worsens the prediction. However, this is only due tue the true function being an extremely easy one to fit and thus predict. With more complex functions, allowing the model to focus only on the parts of the distribution one deems more important can really help the model in the fitting of those sections. 
+
+For the actual implementation of this loss function, note how many of the models mentioned in the \nameref{s:models} section are able to work with custom loss functions. However, to analyze whether a custom loss function helps in improving model accuracy for extreme values it is not necessary to retrain all models with this loss function. A single model will be trained with this loss function and its results will be compared to those obtained with the baseline loss function (MAE). The chosen model for the analysis has been the XGBoost given its ease of training and simplicity. In order to implement the $SERA$ loss function for the XGBoost library, functions defining its gradient and hessian have been created.
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
 \textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
@@ -332,6 +342,7 @@ A significantly important aspect of the models is their need to be particularly 
 The extreme value assessment is particularly important for wind generation, rather than for solar generation as it is much more consistent. Therefore, these values will only be calculated for the wind series. 
 
 \subsection{Model training and validation}
+\label{s:model-training-and-validation}
 After having layed out the different evaluation metrics that will be used, the method used for training and validating the models will be presented. 
 
 A general train-test-validation split will be used. This approach splits the available data in three groups. The first will be used to train the models. The second will be used to test the models and iteratively improve these models, by checking for overfitting and evaluating different parameter setups. The validation data is left as a the final evaluation data, where the final metrics that will be presented are calculated. The metrics obtained in this group can be seen as the metrics that are to be expected of the models in a real world context after deployment. A split of 1 year validation data, 1 year testing data and the rest as training data has been chosen, as a 1 year prediction horizon is a long enough horizon to test the long run characteristics of the model and it contains values for all different seasons. 
