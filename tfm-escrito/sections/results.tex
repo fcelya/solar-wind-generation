@@ -12,17 +12,17 @@ The metrics of the validation set obtained in the \nameref{s:model-training-and-
         \toprule
         \textbf{Solar PV} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\ 
         \midrule            
-        Cramer von Mises&29.34&364.6&93.27&29.21&223.3&747.4 \\
-        KL divergence&0.0002762&0.4844&0.1905&0.0002732&0.1662&1.586 \\
-        ACF$_\xi$ distance&0.0127&0.1201&0.1089&0.01338&0.2289&0.1802 \\
+        Cramer von Mises&29.34&364.6&93.27&295.7&223.3&747.4 \\
+        KL divergence&0.0002762&0.4844&0.1905&1.692&0.1662&1.586 \\
+        ACF$_\xi$ distance&0.0127&0.1201&0.1089&0.1163&0.2289&0.1802 \\
         \midrule
-        CCMD&0.01117&0.3291&0.1044&0.01117&0.8375&0.3549 \\
-        CCF$_\xi^{Solar TH}$ distance&0.009855&0.1232&0.08045&0.009355&0.1484&0.3242 \\
-        CCF$_\xi^{Wind}$ distance&0.01187&0.07759&0.04984&0.01203&0.1091&0.8558 \\
+        CCMD&0.01117&0.3291&0.1044&0.2151&0.8375&0.3549 \\
+        CCF$_\xi^{Solar TH}$ distance&0.009855&0.1232&0.08045&0.223&0.1484&0.3242 \\
+        CCF$_\xi^{Wind}$ distance&0.01187&0.07759&0.04984&0.1515&0.1091&0.8558 \\
         \midrule
-        CVaR$^+$ distance&-0.02966&8.394&0.08376&0.03057&0.6503&-0.7125 \\
-        Tail dependence coefficient$^+$&0.3676&0.2671&0.3174&0.3676&0.1187&0.03397 \\
-        Return level distance$^+$&0.01537&1.857e+07&-0.3411&-0.0004157&0.7803&-0.9312 \\
+        CVaR$^+$ distance&-0.02966&8.394&0.08376&-0.6706&0.6503&-0.7125 \\
+        Tail dependence coefficient$^+$&0.3676&0.2671&0.3174&0.000&0.1187&0.03397 \\
+        Return level distance$^+$&0.01537&1.857e+07&-0.3411&-1.091&0.7803&-0.9312 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -42,7 +42,7 @@ The metrics of the validation set obtained in the \nameref{s:model-training-and-
         0.02316&0.01634&0.07532&0.4126&0.06594&0.1383&0.08443 \\
         \midrule
         1.037&0.003395&0.1888&-0.9442&-0.6828&-0.3569&0.1683 \\
-        0.2831&0.3265&0.2032&0&0.04338&0.002283&0.3699 \\
+        0.2831&0.3265&0.2032&0.000&0.04338&0.002283&0.3699 \\
         4.802&-0.1408&0.7089&-1.09&-0.02178&-0.3841&0.2181 \\
         \bottomrule
     \end{tabular}
@@ -50,8 +50,7 @@ The metrics of the validation set obtained in the \nameref{s:model-training-and-
     \caption{Results of the different models for Solar PV\label{long}}
     \label{table:results-solar-pv}
 \end{table}
-
-Given the great number of metrics and the difficulty of easily interpreting them, here is another table with the rank of the model for each metric. That is, for each metric, each model will be shown as the 1st, 2nd, 3rd... best model. The benchmark has also been included in this ranking. In bold, the best model -- apart from the benchmark -- is highlighted. 
+Given the great number of metrics and the difficulty of easily interpreting them, here is another table with the rank of the model for each metric. That is, for each metric, each model will be shown as the 1st, 2nd, 3rd... best model. The benchmark has also been included in this ranking. In most metrics a lower value is better, while for the distances in the extreme values category it is having a lower absolute value what is important, as the deviation in either sense is negative. The Tail dependence coefficient is the only metric where a higher value is better. In bold, the best model -- apart from the benchmark -- is highlighted. 
 \newpage
 \begin{table}[ht]
     \footnotesize
@@ -59,19 +58,19 @@ Given the great number of metrics and the difficulty of easily interpreting them
         \toprule
         \textbf{Solar PV} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\
         \midrule            
-        Cramer von Mises&(2)&(10)&(6)&\textbf{(1)}&(9)&(12) \\
-        KL divergence&(2)&(9)&(7)&\textbf{(1)}&(6)&(12) \\
-        ACF$_\xi$ distance&(1)&(8)&(7)&\textbf{(2)}&(12)&(11) \\
+        Cramer von Mises&(1)&(10)&(5)&(9)&(8)&(12) \\
+        KL divergence&(1)&(8)&(6)&(12)&(5)&(11) \\
+        ACF$_\xi$ distance&(1)&(8)&(6)&(7)&(12)&(11) \\
         \midrule
-        CCMD&(2)&(7)&(4)&\textbf{(1)}&(13)&(8) \\
-        CCF$_\xi^{Solar TH}$ distance&(2)&(7)&(5)&\textbf{(1)}&(8)&(13) \\
-        CCF$_\xi^{Wind}$ distance&(1)&(8)&(5)&\textbf{(2)}&(10)&(13) \\
+        CCMD&(1)&(7)&(3)&(6)&(13)&(8) \\
+        CCF$_\xi^{Solar TH}$ distance&(1)&(6)&(4)&(10)&(7)&(13) \\
+        CCF$_\xi^{Wind}$ distance&(1)&(7)&(4)&(11)&(9)&(13) \\
         \midrule
-        CVaR$^+$ distance&(2)&(13)&(4)&(3)&(8)&(10) \\
-        Tail dependence coefficient$^+$&(12)&(7)&(9)&(12)&(5)&(3) \\
-        Return level distance$^+$&(2)&(13)&(6)&\textbf{(1)}&(9)&(10) \\
+        CVaR$^+$ distance&(2)&(13)&(3)&(8)&(7)&(10) \\
+        Tail dependence coefficient$^+$&(2)&(6)&(4)&(12)&(8)&(10) \\
+        Return level distance$^+$&(1)&(13)&(5)&(11)&(8)&(9) \\
         \bottomrule
-        Total&(26)&(82)&(53)&\textbf{(24)}&(80)&(92) \\
+        Total&(11)&(78)&(40)&(86)&(77)&(97) \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -82,19 +81,19 @@ Given the great number of metrics and the difficulty of easily interpreting them
         \toprule
         N-BEATS&N-HiTS&TimeMixer&TFT&Informer&FEDFormer&iTransformer \\
         \midrule            
-        (5)&(3)&(4)&(13)&(11)&(8)&(7) \\
-        (8)&(3)&(5)&(13)&(11)&(10)&(4) \\
-        (6)&(5)&(3)&(10)&(13)&(9)&(4) \\
+        (4)&\textbf{(2)}&(3)&(13)&(11)&(7)&(6) \\
+        (7)&\textbf{(2)}&(4)&(13)&(10)&(9)&(3) \\
+        (5)&(4)&\textbf{(2)}&(10)&(13)&(9)&(3) \\
         \midrule
-        (5)&(9)&(3)&(11)&(12)&(10)&(6) \\
-        (3)&(10)&(6)&(11)&(9)&(12)&(4) \\
-        (4)&(3)&(7)&(12)&(6)&(11)&(9) \\
+        (4)&(9)&\textbf{(2)}&(11)&(12)&(10)&(5) \\
+        \textbf{(2)}&(9)&(5)&(11)&(8)&(12)&(3) \\
+        (3)&\textbf{(2)}&(6)&(12)&(5)&(10)&(8) \\
         \midrule
-        (12)&\textbf{(1)}&(6)&(11)&(9)&(7)&(5) \\
-        (8)&(10)&(6)&\textbf{(1)}&(4)&(2)&(13) \\
-        (12)&(4)&(8)&(11)&(3)&(7)&(5) \\
+        (12)&\textbf{(1)}&(5)&(11)&(9)&(6)&(4) \\
+        (5)&(3)&(7)&(12)&(9)&(11)&\textbf{(1)} \\
+        (12)&(3)&(7)&(10)&\textbf{(2)}&(6)&(4) \\
         \bottomrule
-        (63)&(48)&(48)&(93)&(78)&(76)&(57) \\
+        (54)&\textbf{(35)}&(41)&(104)&(79)&(80)&(37) \\
         \bottomrule
     \end{tabular}
     \end{flushright}
@@ -104,20 +103,28 @@ Given the great number of metrics and the difficulty of easily interpreting them
 
 At the bottom of \autoref{table:results-rank-solar-pv} a Total can be found. This total is the sum of the rank of the model accross all metrics and it can be seen as a very simple proxy of the overall goodness of the model across all domains -- distribution fit, multivariate coherence and extreme value fit. 
 
-When first seeing these results many insights can be extracted. The first one is about the evaluation metrics themselves. By looking at \autoref{table:results-rank-solar-pv} one can see that the rank of a given model for the evaluation metrics in a given category -- distribution fit, multivariate coherence and extreme value fit -- are generally congruent with each other. That is, if one of the models is one of the best according to the Cramer von Mises metric for example, it will tend to be ranked highly also with the KL divergence and ACF$_\xi$ distance metrics. However, that is not the case for the Tail dependence coefficient$^+$. This metric can be more affected by shifts in extreme value presence than the other two, and thus it can be seen how it contains more noise than the others and does not reflect the same ranking among models. That is why, this metric will not be as highly taken into account as the other two extreme value metrics. However, it will still be included for completeness sake. 
+%THIS WAS BEFORE CHANIGING RANK OF TAIL DEPENDENCE When first seeing these results many insights can be extracted. The first one is about the evaluation metrics themselves. By looking at \autoref{table:results-rank-solar-pv} one can see that the rank of a given model for the evaluation metrics in a given category -- distribution fit, multivariate coherence and extreme value fit -- are generally congruent with each other. That is, if one of the models is one of the best according to the Cramer von Mises metric for example, it will tend to be ranked highly also with the KL divergence and ACF$_\xi$ distance metrics. However, that is not the case for the Tail dependence coefficient$^+$. This metric can be more affected by temporal shifts in the extreme values than the other two, and thus it can be seen how it contains more noise than the others and does not reflect the same ranking among models. That is why, this metric will not be as highly taken into account as the other two extreme value metrics. However, it will still be included for completeness sake. 
 
-The most relevant and straightforward insight that can be obtained is which is the best overall model of them all. In the case of solar PV the answer is very clear, it is -- maybe surprisingly -- the VARMAX model. It could be considered that the series modeled by the solar PV is practically as realistic as the empirical data, being practically always at the same level as the benchmark, even surpassing it in many metrics. This could be surprising given the apparent simplicity of the VARMAX model. It is strictly linear, with no inherent way of capturing complex or long term dependencies. The only part where the good performance shouldn't come as a surprise is in the metrics regarding the relationship of the predicted series with the other two variables, given how the inherently multivariate nature of the VARMAX could be an advantage to other models that use the strictly univariate or univariate with exogenous variables type. 
+The most relevant and straightforward insight that can be obtained from a quick glance at the results is the superiority of the NN based models in general, and more precisely of the N-HiTS model. This is most probably due to the high seasonality of the solar PV series. This model is speacially designed to operate at different frequencies, thus extracting all relevant frequency based patterns but without overfitting. When looking at each evaluation category, the N-HiTS seems to be the best regarding the general distribution of the forecast, while the TimeMixer seems to be somewhat better regarding the temporal self consistency -- that is, the how correlated a given value should be with its past values -- and the N-BEATS seems to be the better one regarding multivariate cross relationship. Finally in the extreme value modeling the N-HiTS again stands as the best model, with the other two NN models doing considerably worse. 
 
-The next best models both belong to the NN category, being the N-HiTS and the TimeMixer models. As it could be expected, the TimeMixer model is slightly better in the multivariate relationships category, while the N-HiTS is slightly better in the general distribution -- although marginally -- and in the extreme value prediction -- if the Tail dependence coefficient is ignored, given the reasoning explained above. 
+In the statistical methods a very big difference between the SARIMAX and the other two models can be seen. The SARIMAX is actually the best model after the N-HiTS and the iTransformer practically tying with the TimeMixer, performing quite well in all evaluation metric categories. This is again thanks to the SARIMAX being able to utilize the frequency components given by the fourier decompositions without overfitting. The order 1 integration in the SARIMAX however seems to be of critical importance, given how the other two statistical methods perform considerably worse and this is one of the main differences. 
 
-Perhaps the most surprising observation is the bad general performance of the transformer based models. All of them except for the iTransformer are among the worst performers, remainig at the level of or slightly above or below the most naive model, the plain regression. This could be attributed to the complexity of the models, which could have led them to overfitting. The good performance of the iTransformer with respect to the other architectures is consistent with the benchmarks performed by \cite{wang2024tssurvey}, however its worse performance compared to the VARMAX and its lack of improvement compared to the NN based models is quite disappointing. 
+Within the transformer based models there seems to also be a great difference between the iTransformer -- which is actually the second best model practically tied with the N-HiTS, doing worse in general distribution but better in multivariate coherence -- and the rest of the transformer models, with the latter being at a performance level similar to the vanilla Regression model. This could be attributed to the complexity of the models, which could have led them to overfitting. The good performance of the iTransformer with respect to the other architectures is consistent with the benchmarks performed by \cite{wang2024tssurvey}.  
 
-Finally, regarding the machine learning methods the conclusions are similar to those of the transformer based models. Their performance is among the worst of all the models. They seem to have joined the worst characteristics of the simple statistical methods and the more complex NN based methods. The way of encoding seasonal and time varying data is not as sophisticated as for the NN models as they only use the Fourier decompositions, however by adding extra complexity in the way those decompositions are used compared to the statistical methods they seem to overfit and end up performing even worse than these simpler models. Among themselves, it seems like the SVM is better equiped than the XGBoost to model the general distribution of the data, with less conclusive results in the other two categories.  
+Finally, regarding the machine learning methods the conclusions are similar to those of the transformer based models. Their performance is among the worst of all the models. They seem to have joined the worst characteristics of the simple statistical methods and the more complex NN based methods. The way of encoding seasonal and time varying data is not as sophisticated as for the NN models as they only use the Fourier decompositions, however by adding extra complexity in the way those decompositions are used compared to the statistical methods they seem to overfit and end up performing even worse than these simpler models. Among themselves, it seems like the SVM is better equiped than the XGBoost to model the solar PV data.
 
+Here is a plot of the yearly and weekly for a random week modeled data, together with the actual data. Note how on a moment to moment basis the data does not need to be similar, as the goal is not to accurately predict the hourly value of the capacity factor, but to get a distribution of data with the same characteristics. 
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.7\linewidth]{assets/nhits-solar-pv.png}
+    \caption{Weekly and yearly predicted and actual solar PV capacity factor for the N-HiTS model}
+    \label{fig:nhits-solar-pv}
+\end{figure}
+Note how the modeled data is much more rugged on an hourly basis, while the actual data follows a much smoother hour to hour pattern. However, this model is still more accurate with that ruggedness than other smoother models like the SARIMAX or the VARMAX.  
+On the yearly pattern it can be seen how the model greatly overestimates some extreme positive values and has some sudden drops in capacity factor around august, but the general patterns are maintained. 
 \subsection{Solar TH}
 For the solar thermal capacity factor series, the results will be shown in the same way as for the \nameref{s:solar-pv-results} section. The two tables showing the metrics' values and the rank of the models will be presented, and they will later be discussed. 
-
-% Given the similarity of this series to the previous one, similar results are expected, maybe with better performance of the 
 
 % \newpage
 \begin{table}[ht]
@@ -126,17 +133,17 @@ For the solar thermal capacity factor series, the results will be shown in the s
         \toprule
         \textbf{Solar TH} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\ 
         \midrule            
-        Cramer von Mises&12.87&239.5&144.6&14.59&93.37&653.9 \\
-        KL divergence&0.01016&0.2558&0.1379&0.01094&0.4101&4.31 \\
-        ACF$_\xi$ distance&0.02488&0.2246&0.1936&0.02532&0.1988&0.2507 \\
+        Cramer von Mises&12.87&239.5&144.6&209.2&93.37&653.9 \\
+        KL divergence&0.01016&0.2558&0.1379&1.014&0.4101&4.31 \\
+        ACF$_\xi$ distance&0.02488&0.2246&0.1936&0.1826&0.1988&0.2507 \\
         \midrule
-        CCMD&0.01117&0.3291&0.1044&0.01117&0.8375&0.3549 \\
-        CCF$_\xi^{Solar PV}$ distance&0.01513&0.1008&0.08724&0.01545&0.1686&0.2552 \\
-        CCF$_\xi^{Wind}$ distance&0.02013&0.08723&0.1107&0.01912&0.1124&0.861 \\
+        CCMD&0.01117&0.3291&0.1044&0.2151&0.8375&0.3549 \\
+        CCF$_\xi^{Solar PV}$ distance&0.01513&0.1008&0.08724&0.223&0.1686&0.2552 \\
+        CCF$_\xi^{Wind}$ distance&0.02013&0.08723&0.1107&0.1376&0.1124&0.861 \\
         \midrule
-        CVaR$^+$ distance&0.0732&2.869&-0.04785&-0.06821&11.09&-0.8908 \\
-        Tail dependence coefficient$^+$&0.3356&0.3676&0.3539&0.3356&0.05479&0.08844 \\
-        Return level distance$^+$&0.2928&17.04&-1.004&-0.1932&1.394e+10&-0.8234 \\
+        CVaR$^+$ distance&0.0732&2.869&-0.04785&-0.5135&11.09&-0.8908 \\
+        Tail dependence coefficient$^+$&0.3356&0.3676&0.3539&0.2192&0.05479&0.08844 \\
+        Return level distance$^+$&0.2928&17.04&-1.004&-0.9157&1.394e+10&-0.8234 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -173,20 +180,20 @@ Again, the model rank table will be shown to better interpret these results.
         \toprule
         \textbf{Solar TH} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\
         \midrule            
-        Cramer von Mises&(1)&(8)&(7)&\textbf{(2)}&(4)&(11) \\
-        KL divergence&(1)&(7)&(5)&\textbf{(2)}&(8)&(13) \\
-        ACF$_\xi$ distance&(1)&(10)&(7)&\textbf{(2)}&(9)&(11) \\
+        Cramer von Mises&(1)&(8)&(6)&(7)&(3)&(11) \\
+        KL divergence&(1)&(6)&(4)&(11)&(7)&(13) \\
+        ACF$_\xi$ distance&(1)&(10)&(7)&(5)&(9)&(11) \\
         \midrule
-        CCMD&(2)&(7)&(4)&\textbf{(1)}&(13)&(8) \\
-        CCF$_\xi^{Solar PV}$ distance&(1)&(7)&(5)&\textbf{(2)}&(9)&(12) \\
-        CCF$_\xi^{Wind}$ distance&(2)&(4)&(5)&\textbf{(1)}&(6)&(13) \\
+        CCMD&(1)&(7)&(3)&(6)&(13)&(8) \\
+        CCF$_\xi^{Solar PV}$ distance&(1)&(6)&(4)&(10)&(8)&(12) \\
+        CCF$_\xi^{Wind}$ distance&(1)&(3)&(4)&(8)&(5)&(13) \\
         \midrule
-        CVaR$^+$ distance&(3)&(11)&\textbf{(1)}&(2)&(13)&(9) \\
-        Tail dependence coefficient$^+$&(8)&(11)&(10)&(8)&(3)&(4) \\
-        Return level distance$^+$&(3)&(12)&(9)&(2)&(13)&(7) \\
+        CVaR$^+$ distance&(2)&(11)&\textbf{(1)}&(6)&(13)&(9) \\
+        Tail dependence coefficient$^+$&(5)&(3)&(4)&(6)&(11)&(10) \\
+        Return level distance$^+$&(2)&(12)&(9)&(8)&(13)&(6) \\
         \bottomrule
-        Total&(22)&(77)&(53)&\textbf{(22)}&(78)&(88) \\
-\bottomrule
+        Total&(15)&(66)&(42)&(68)&(82)&(93) \\
+        \bottomrule
     \end{tabular}
 \end{table}
 \begin{table}[ht]
@@ -196,19 +203,19 @@ Again, the model rank table will be shown to better interpret these results.
         \toprule
         N-BEATS&N-HiTS&TimeMixer&TFT&Informer&FEDFormer&iTransformer \\
         \midrule            
-        (6)&(5)&(9)&(12)&(13)&(10)&(3) \\
-        (6)&(4)&(11)&(9)&(10)&(12)&(3) \\
-        (5)&(13)&(3)&(8)&(12)&(6)&(4) \\
+        (5)&(4)&(9)&(12)&(13)&(10)&\textbf{(2)} \\
+        (5)&(3)&(10)&(8)&(9)&(12)&\textbf{(2)} \\
+        (4)&(13)&\textbf{(2)}&(8)&(12)&(6)&(3) \\
         \midrule
-        (5)&(9)&(3)&(11)&(12)&(10)&(6) \\
-        (3)&(10)&(6)&(8)&(13)&(11)&(4) \\
-        (7)&(12)&(3)&(10)&(11)&(8)&(9) \\
+        (4)&(9)&\textbf{(2)}&(11)&(12)&(10)&(5) \\
+        \textbf{(2)}&(9)&(5)&(7)&(13)&(11)&(3) \\
+        (6)&(12)&\textbf{(2)}&(10)&(11)&(7)&(9) \\
         \midrule
-        (10)&(6)&(7)&(12)&(5)&(8)&(4) \\
-        (13)&(2)&(7)&\textbf{(1)}&(6)&(5)&(12) \\
-        (11)&(10)&(5)&(6)&\textbf{(1)}&(8)&(4) \\
+        (10)&(5)&(7)&(12)&(4)&(8)&(3) \\
+        \textbf{(1)}&(12)&(6)&(13)&(8)&(9)&(2) \\
+        (11)&(10)&(4)&(5)&\textbf{(1)}&(7)&(3) \\
         \bottomrule
-        (66)&(71)&(54)&(77)&(83)&(78)&(49) \\
+        (48)&(77)&(48)&(86)&(83)&(80)&\textbf{(32)} \\
         \bottomrule
     \end{tabular}
     \end{flushright}
@@ -216,14 +223,26 @@ Again, the model rank table will be shown to better interpret these results.
     \label{table:results-rank-solar-pv}
 \end{table}
 
-The first thing that should be taken into account before analyzing these results is that the solar thermal series is very similar to the solar photovoltaic series, therefore similar results should be expected. The only difference being more variability at night and higher dependence on previous values of the cross series, mainly of solar photovoltaic. However, the results should still be quite similar.
+The first thing that should be taken into account before analyzing these results is that the solar thermal series is very similar to the solar photovoltaic series, therefore similar results should be expected. The only difference being more variability at night and higher dependence on previous values of the cross series, mainly of solar photovoltaic. 
 
-Perhaps because of this it is now less surprising to see again the VARMAX as the undisputed best model. It is again the best model in all categories. 
+Perhaps because of these characteristics there seems to be quite a difference in performance among the top models compared to solar PV. In this case, the iTransformer is clearly the best model. This model is clearly the best in modeling the general distribution of the data, but also does incredibly well in modeling extreme values and quite well on the multivariate characteristics. This could be explained by the fact that the solar thermal series as explained has somewhat of a more complex relationship with lagged values and solar PV and wind values. Thanks to its ability to be stored, its capacity factor is no longer exclusively reliant on weather conditions but also depends on human decisions. That is human decisions that could be affected by how much energy has been stored -- highly correlated with past solar PV data -- and how much has been or is expected to be produced by the rest of the energy resources. As for the rest of the transformer models, they strongly underperform, only doing comparatively better in extreme value modeling, perhaps again due to being able to capture the complex relationships between these extreme values and past or cross values. 
 
-The general performance of all model types is slightly different in this case. Even though the statistical methods -- appart from the plain regression -- are still the best overall methods, less difference is seen with the best models of the NN architectures -- the TimeMixer -- and the transformer architecutres -- the iTransformer. The gap between these models and the rest of the models of their type is widened, very probably due to these two models being the only ones that are inherently multivariate of them all. In fact, the top three models are all inherently multivariate. This is most probably due to the fact that the solar thermal series has a high correlation with lagged solar photovoltaic and wind values. Therefore, models capable of better modeling these relationships should be better at both modeling the overall distribution of the variable and its relationship with the other two distributions. 
+Another surprising part is the drop in performance by the N-HiTS, perhaps due to the higher complexity in this series in the lesser significance of the frequency structure leveraged by this model. The TimeMixer and N-BEATS on the other hand remain really strong performers tying at third place among all models. These models are specially good in capturing the cross relationships between this series and the other two. The TimeMixer model is specially good at this and at capturing the temporal self consistency of the series, while it is not nearly as good in capturing the general distribution of the data.
 
-In the case of the solar thermal another thing that was also visible in the solar photovoltaic returns is confirmed here. The transformer based models are comparatively better in the extreme value modeling than in the other two categories. This is probably due to the extreme values being determined by more complex or long run patterns, where the transformer models are better equiped to deal with them than the machine learning or NN models. 
+Among the statistical models the analysis is very similar to solar PV, with the SARIMAX model being again the best within this family and one of the best overall, with the other two models performing significantly worse. 
 
+Regarding the ML models a behaviour similar to the last one is observed, with both doing really poorly although slightly better for the SVM, with the only category where XGBoost does better being the extreme value modeling. This is coherent with what has been observed for the transformer models, where models with more parameters capable of capturing more complex patterns but more prone to overfitting do comparatively better in this evaluation category. 
+
+Below the same representation as before is given but in this case for the iTransformer model, given how this one is the best in this case.
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.7\linewidth]{assets/itransformer-solar-th.png}
+    \caption{Weekly and yearly predicted and actual solar TH capacity factor for the iTransformer model}
+    \label{fig:itransformer-solar-th}
+\end{figure}
+In this case, the same ruggedness problem can be seen, which is common to all NN and transformer based models. However, the solar thermal series is not as smooth as the solar photovoltaic so it does not stand as much. It can also be seen how the model accurately models the nightime generation for solar thermal. 
+As for the yearly pattern, the model seems to greatly underestimate generation during the winter months and it also assumes a much more uniform generation profile than the real one. 
 \subsection{Wind}
 The last of the three series is the most different compared to the other two, given the much lower seasonality in wind production and its higher degree of dependence on past cross series. The results obtained for the wind series are the following. Note how in this case both the positive and negative extreme values hold some interest as the lower end of the distribution is no longer zero. In fact, moments of very low wind generation are of special interest given these are the moments when the rest of the energy sources would have to step up.  
 
@@ -234,20 +253,20 @@ The last of the three series is the most different compared to the other two, gi
         \toprule
         \textbf{Wind} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\ 
         \midrule            
-        Cramer von Mises&9.483&1783&1814&9.483&434.2&774.6 \\
-        KL divergence&0.001479&1.109&1.208&0.001505&0.1318&0.3214 \\
-        ACF$_\xi$ distance&0.06016&0.3458&0.3143&0.06525&0.3302&0.6625 \\
+        Cramer von Mises&9.483&1783&1814&360.4&434.2&774.6 \\
+        KL divergence&0.001479&1.109&1.208&0.1067&0.1318&0.3214 \\
+        ACF$_\xi$ distance&0.06016&0.3458&0.3143&0.4598&0.3302&0.6625 \\
         \midrule
-        CCMD&0.01117&0.3291&0.1044&0.01117&0.8375&0.3549 \\
-        CCF$_\xi^{Solar PV}$ distance&0.01282&0.1621&0.1686&0.01252&0.115&0.4045 \\
-        CCF$_\xi^{Solar TH}$ distance&0.01363&0.242&0.2763&0.01133&0.0808&0.525 \\
+        CCMD&0.01117&0.3291&0.1044&0.2151&0.8375&0.3549 \\
+        CCF$_\xi^{Solar PV}$ distance&0.01282&0.1621&0.1686&0.05547&0.115&0.4045 \\
+        CCF$_\xi^{Solar TH}$ distance&0.01363&0.242&0.2763&0.0691&0.0808&0.525 \\
         \midrule
-        CVaR$^+$ distance&-0.02357&0.4225&0.06328&0.02414&0.02966&-0.5748 \\
-        CVaR$^-$ distance&-0.2462&5.582&6.485&0.3266&2.912&5.746 \\
-        Tail dependence coefficient$^+$&0.04795&0.09132&0.1256&0.04795&0.1119&0.05028 \\
-        Tail dependence coefficient$^-$&0.1507&0.1027&0.1553&0.1507&0.05023&0.05003 \\
-        Return level distance$^+$&1.362&-0.4957&-0.4707&-0.5767&-0.5813&-1.081 \\
-        Return level distance$^-$&-13.51&-7.643&-8.188&-1.139&-3.629&-5.709 \\
+        CVaR$^+$ distance&-0.02357&0.4225&0.06328&-0.03603&0.02966&-0.5748 \\
+        CVaR$^-$ distance&-0.2462&5.582&6.485&3.104&2.912&5.746 \\
+        Tail dependence coefficient$^+$&0.04795&0.09132&0.1256&0.1301&0.1119&0.05028 \\
+        Tail dependence coefficient$^-$&0.1507&0.1027&0.1553&0.1484&0.05023&0.05003 \\
+        Return level distance$^+$&1.362&-0.4957&-0.4707&-0.5817&-0.5813&-1.081 \\
+        Return level distance$^-$&-13.51&-7.643&-8.188&-4.958&-3.629&-5.709 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -288,22 +307,22 @@ The rank of each of the models can be seen in \autoref{table:results-rank-wind}.
         \toprule
         \textbf{Wind} &Benchmark&Regression&SARIMAX&VARMAX&SVM&XGBoost \\
         \midrule            
-        Cramer von Mises&(2)&(12)&(13)&\textbf{(2)}&(6)&(10) \\
+        Cramer von Mises&(1)&(12)&(13)&(4)&(6)&(10) \\
         KL divergence&(1)&(12)&(13)&\textbf{(2)}&(4)&(8) \\
-        ACF$_\xi$ distance&(1)&(10)&(5)&\textbf{(2)}&(6)&(13) \\
+        ACF$_\xi$ distance&(1)&(9)&(4)&(10)&(5)&(13) \\
         \midrule
-        CCMD&(2)&(7)&(4)&\textbf{(1)}&(13)&(8) \\
-        CCF$_\xi^{Solar PV}$ distance&(2)&(8)&(9)&\textbf{(1)}&(7)&(12) \\
-        CCF$_\xi^{Solar TH}$ distance&(2)&(7)&(8)&\textbf{(1)}&(5)&(11) \\
+        CCMD&(1)&(7)&(3)&(6)&(13)&(8) \\
+        CCF$_\xi^{Solar PV}$ distance&(1)&(8)&(9)&(6)&(7)&(12) \\
+        CCF$_\xi^{Solar TH}$ distance&(1)&(7)&(8)&(4)&(5)&(11) \\
         \midrule
-        CVaR$^+$ distance&(1)&(8)&(4)&\textbf{(2)}&(3)&(13) \\
-        CVaR$^-$ distance&(1)&(11)&(13)&\textbf{(2)}&(5)&(12) \\
-        Tail dependence coefficient$^+$&(4)&(10)&(13)&(4)&(12)&(5) \\
-        Tail dependence coefficient$^-$&(10)&(8)&(12)&(10)&(3)&(2) \\
-        Return level distance$^+$&(13)&(3)&(2)&(4)&(5)&(12) \\
-        Return level distance$^-$&(13)&(11)&(12)&(2)&(6)&(8) \\
+        CVaR$^+$ distance&(1)&(8)&(4)&(3)&\textbf{(2)}&(13) \\
+        CVaR$^-$ distance&(1)&(11)&(13)&(5)&(4)&(12) \\
+        Tail dependence coefficient$^+$&(11)&(6)&(2)&\textbf{(1)}&(3)&(10) \\
+        Tail dependence coefficient$^-$&(3)&(6)&(2)&(4)&(11)&(12) \\
+        Return level distance$^+$&(13)&(3)&(2)&(5)&(4)&(12) \\
+        Return level distance$^-$&(13)&(11)&(12)&(6)&(5)&(8) \\
         \bottomrule
-        Total&(52)&(106)&(108)&\textbf{(32)}&(75)&(114) \\
+        Total&(48)&(100)&(85)&\textbf{(56)}&(69)&(129) \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -314,22 +333,22 @@ The rank of each of the models can be seen in \autoref{table:results-rank-wind}.
         \toprule
         N-BEATS&N-HiTS&TimeMixer&TFT&Informer&FEDFormer&iTransformer \\
         \midrule            
-        (5)&(7)&(8)&(9)&(11)&(3)&(4) \\
+        (5)&(7)&(8)&(9)&(11)&\textbf{(2)}&(3) \\
         (10)&(7)&(6)&(9)&(11)&(3)&(5) \\
-        (3)&(11)&(4)&(9)&(12)&(8)&(7) \\
+        \textbf{(2)}&(11)&(3)&(8)&(12)&(7)&(6) \\
         \midrule
-        (5)&(9)&(3)&(11)&(12)&(10)&(6) \\
-        (3)&(4)&(6)&(11)&(13)&(5)&(10) \\
-        (6)&(13)&(4)&(10)&(12)&(3)&(9) \\
+        (4)&(9)&\textbf{(2)}&(11)&(12)&(10)&(5) \\
+        \textbf{(2)}&(3)&(5)&(11)&(13)&(4)&(10) \\
+        (6)&(13)&(3)&(10)&(12)&\textbf{(2)}&(9) \\
         \midrule
         (12)&(9)&(7)&(11)&(5)&(10)&(6) \\
-        (4)&(8)&(7)&(10)&(9)&(3)&(6) \\
-        (10)&(11)&(8)&(6)&\textbf{(1)}&(2)&(7) \\
-        (9)&(6)&(5)&(4)&(6)&\textbf{(1)}&(13) \\
+        (3)&(8)&(7)&(10)&(9)&\textbf{(2)}&(6) \\
+        (6)&(4)&(7)&(9)&(13)&(12)&(8) \\
+        (5)&(8)&(9)&(10)&(8)&(13)&\textbf{(1)} \\
         (8)&(11)&(9)&(10)&\textbf{(1)}&(6)&(7) \\
-        (5)&(4)&(7)&(9)&(10)&\textbf{(1)}&(3) \\
+        (4)&(3)&(7)&(9)&(10)&\textbf{(1)}&(2) \\
         \bottomrule
-        (80)&(100)&(74)&(109)&(104)&(55)&(83) \\
+        (66)&(92)&(73)&(117)&(116)&(72)&(68) \\
         \bottomrule
     \end{tabular}
     \end{flushright}
@@ -337,13 +356,35 @@ The rank of each of the models can be seen in \autoref{table:results-rank-wind}.
     \label{table:results-rank-wind}
 \end{table}
 
-Surprisingly, the results in this last series are very similar to those in the previous two. The best performing model overall is again the VARMAX model, performing at the benchmark level. This model manages to be the best in general distribution fit and in multivariate coherence, and to be among the best in extreme value modeling. 
+At a quick glance it can be seen how the results for the wind series are quite different to those of the other two series. In this case, a different transformer based model -- the FEDFormer -- is the best performer. However, this overall result is highly skewed by the extreme value prediction metric, wehre this model does greatly. In the rest of the categories it also does quite good but not comparatively as much. The iTransformer on the other hand drops quite a few positions in the overall ranking, doing not very badly but not being nearly as dominant, with the general distribution being its best category. The TFT and the Informer are again some of the worst performing models. 
 
-Regarding extreme value modeling, again the transformer based models are the ones that excel at this -- in contrast with the other characteristics. This is probably due to the extreme values in the wind series being caused by more complex patterns where transformer models actually have an edge. Interestingly, this series is the first where the best performing model is not the iTransformer but the FEDFormer, which actually becomes the second best performing model after the VARMAX and with quite a big advantage over the rest of the transformer models. It seems like the frequency decomposition performed by this model and headed into the attention mechanism actually helps in modeling the wind series, which appears to be more driven by frequency characteristics than any other thing. 
+In this case, the VARMAX is surprisingly the best model. It is the first series in which this model outperforms the SARIMAX model, most surely due to the integration component not being significant in this series due to its much higher stationarity. The results of the whole statistical category are however quite surprising, as it would seem by looking at the VARMAX that the simplicity of the model were an advantage, preventing it from capturing spurious patterns more present in the wind series. However, the other two simple models are significantly worse performers. 
 
-The machine learning models again perform quite poorly, although here the advantage of the SVM method over the XGBoost that could be seen in the other two sets of results is even more accentuated. This is probably due to a higher presence of outliers in the wind series, with the SVM model being more robust to the presence of outliers than the XGBoost model. 
+Another model with a great improvement in performance is the SVM, for the first time ranking among the top models although not standing out specially in any given category. Again, the XGBoost is the worst performing model.
 
-Regarding the NN models, the TimeMixer is again the best performing one. However, interestingly the N-HiTS seems to have lost its edge over the N-BEATS model. This is unexpected given the previous hypothesis where the wind series was driven mainly by frequency based mechanisms, as the N-HiTS should be better equiped than the N-BEATS to capture this behaviour. 
+The N-BEATS and TimeMixer models are again doing very good, with the N-HiTS maintining its drop in performance in this complex series. 
+
+As for the transformers, it would seem like they could maybe benefit from their long run complex pattern capabilities for this series, however as it has already been seen in this series simplicity seems to be the way to go. The iTransformer is agian the best out of all transformer based models, followed by the FEDFormer. This latter model is specially good at modelling the lower tail of the distribution. Although it does significantly worse for the upper tail. 
+
+One final difference for this series is how worse all models are compared to the benchmark relatively to the other two series. No matter what metric one looks at, the gap between the best model and the benchmark is significnatly higher than for the other two series, hinting at the existence of unexploited patterns or modeling criteria that are not being leveraged and that thus do not allow the models to represent the wind series as realistically. 
+
+Finally, regarding the evaluation method itself, it is worth noting how for example all of the models including the benchmark have a very significant negative Return level distance $^-$. What this is showing is that the return level for the lower tail is greately underestimated by all models. If all models including the benchmark show the same bias, it could show that there may be a problem with the data used for evaluation itself, where the lower tail distribution was not representative and thus was underestimated by all models.
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.7\linewidth]{assets/varmax-wind.png}
+    \caption{Weekly and yearly predicted and actual solar TH capacity factor for the iTransformer model}
+    \label{fig:varmax-wind}
+\end{figure}
+The comparison seen in \autoref{fig:varmax-wind} is by far the most discouraging one. It can be seen how the modeled profile distribution has nothing to do with the actual one. The volatility in the modeled data is much lower than the real one, with all of the data being concentrated around a yearly seasonality which only captures very basic yearly and daily profiles -- with the daily ones being present only in the summer, but the model showing them for the whole year. 
+
+It is not very promising that this is the best model that could be found, although using other models not as constrained by the seasonality and simplicity of the VARMAX does not shed much improvement. 
+
+\textcolor{red}{ADD NBEATS PLOT?}
+
+This does shed some light on some necessary changes for future works. It is clear that the wind capacity factor has a really prominent random component and a low signal to noise ratio. The loss functions that have been used, which are mainly MAE and SE as they are the standard for these type of tasks, make the model extremely risk averse in their predictions and when they cannot accurately predict the wind values they end up predicting a kind of mean. For more realistic modeling of wind data it seems like different loss functions that don't penalize point errors that much need to be used. 
+
 \subsection{Custom loss function}
 After having analyzed the results for all models in the three capacity factor series, it is now time to analyze the results regarding the hypothesis of the custom loss function. That is, can the behaviour of the model be steered through a custom loss function -- in this case the SERA loss -- to better predict extreme values? As explained in the \nameref{s:loss-function} section, an XGBoost model has been trained using this loss function with the same hyperparameters as the base XGBoost model. In fact, two such models have been implemented, one focusing on the upper tail extreme values and one focusing on the lower tail extreme values. The relevance function in both cases has been to give a relevance of 1 to the top or bottom 10\%, a relevance of 0 to the opposite 10\% and the rest of the distribution is given a relevance based on the spline interpolation. 
 
@@ -355,7 +396,7 @@ Note that the modeling has been done using the custom loss only for the wind mod
     \footnotesize
     \begin{tabular}[r]{r|c|cc}
         \toprule
-        &XGBoost&XGBoost$^-$&XGBoost$^+$ \\
+        \textbf{Wind}&XGBoost&XGBoost$^-$&XGBoost$^+$ \\
         \midrule            
         Cramer von Mises&774.6&1332&1978 \\
         KL divergence&0.3214&0.6029&1.678 \\
@@ -384,7 +425,7 @@ Even though these results are much easier to read and interpret than the ones wh
     \footnotesize
     \begin{tabular}[r]{r|c|cc}
         \toprule
-        &XGBoost&XGBoost$^-$&XGBoost$^+$ \\
+        \textbf{Wind}&XGBoost&XGBoost$^-$&XGBoost$^+$ \\
         \midrule            
         Cramer von Mises&\textbf{(1)}&(2)&(3) \\
         KL divergence&\textbf{(1)}&(2)&(3) \\
@@ -396,18 +437,20 @@ Even though these results are much easier to read and interpret than the ones wh
         \midrule
         CVaR$^+$ distance&(3)&(2)&\textbf{(1)} \\
         CVaR$^-$ distance&\textbf{(1)}&(2)&(3) \\
-        Tail dependence coefficient$^+$&(2)&\textbf{(1)}&(3) \\
-        Tail dependence coefficient$^-$&(3)&(2)&\textbf{(1)} \\
+        Tail dependence coefficient$^+$&(2)&(3)&\textbf{(1)} \\
+        Tail dependence coefficient$^-$&\textbf{(1)}&(2)&(3) \\
         Return level distance$^+$&(2)&(3)&\textbf{(1)} \\
         Return level distance$^-$&\textbf{(1)}&(2)&(3) \\
         \bottomrule
+        Total&\textbf{(22)}&(26)&(24) \\
+        \bottomrule
     \end{tabular}
     \caption{Results of the XGBoost models' rank with SERA loss functions for Wind\label{long}}
-    \label{table:results-custom-loss}
+    \label{table:results-rank-custom-loss}
 \end{table}
 
-The first insight that can be obtained from these results is that, unsurprisingly, the unbiased XGBoost model seems to be the one best representing the general distribution of the series. This is to be expected as the other two models will probably have introduced some bias in order to better fit extreme values. However, what is surprising is how the upper tail focused model performs better in the ACF$_\xi$ distance metric. That is, this model better showcases the temporal relation of the wind series with itself than any of the other two. 
+The first insight that can be obtained from these results is that, unsurprisingly, the unbiased XGBoost model seems to be the one best representing the general distribution of the series. This is to be expected as the other two models will probably have introduced some bias in order to better fit extreme values. However, what is surprising is how the upper tail focused model performs better in all metrics regarding temporal consistency both for the series with itself and with the other two series. This probably means that higher wind capacity factor values are more realted to previous wind and solar values than the lower ones. 
 
 Interestingly, this holds not only for the self temporal correlation but also for the cross temporal correlation, with this model being the also the best one regarding the correlation of the wind values with lagged values of the other two series. 
 
-Regarding extreme values, which is actually the whole purpose of introducing the custom loss function, a couple interesting observations can be made. The first one is to reiterate the low value of the Tail dependence coefficient metric, as it shows results which are completely opposite to the other two and completely unintuitive, showing the models to be best in the opposite tail to the one they should be focusing on. Regarding the other two metrics, the results are much more fitting to expectations. Introducing the SERA loss seems to correctly steer the model into correctly modeling the upper tail of the wind capacity factor. However, this result cannot be replicated for the lower tail and the unbiased model is actually the one with the best performance in the lower extreme values. 
+Regarding extreme values, which is actually the whole purpose of introducing the custom loss function, a couple interesting observations can be made. Introducing the SERA loss seems to correctly steer the model into correctly modeling the upper tail of the wind capacity factor. However, this result cannot be replicated for the lower tail and the unbiased model is actually the one with the best performance in the lower extreme values. 

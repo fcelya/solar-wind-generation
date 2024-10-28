@@ -1,2 +1,6 @@
 VARMAX the best in solar pv and solar th
 Multivariate is more important for solar th
+
+next steps:
+more thorough testing specially for extreme values
+mixed model

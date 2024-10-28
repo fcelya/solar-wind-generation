@@ -251,7 +251,6 @@ In this toy example it may seem like introducing the SERA loss only worsens the 
 For the actual implementation of this loss function, note how many of the models mentioned in the \nameref{s:models} section are able to work with custom loss functions. However, to analyze whether a custom loss function helps in improving model accuracy for extreme values it is not necessary to retrain all models with this loss function. A single model will be trained with this loss function and its results will be compared to those obtained with the baseline loss function (MAE). The chosen model for the analysis has been the XGBoost given its ease of training and simplicity. In order to implement the $SERA$ loss function for the XGBoost library, functions defining its gradient and hessian have been created.
 \subsection{Evaluation metrics}
 \label{s:evaluation-metrics}
-\textcolor{red}{REWRITE METRICS AFTER IMPLEMENTATION WHERE NECESSARY}
 In order to understand why the following metrics have been chosen for evaluation it is important to keep in mind the overarching goal of the project. The goal of the mentioned models is not to provide an accurate short term forecast, but to provide a model that porperly simulates the long term dynamics of the three time series. That is, models that are able of producing long term scenarios of solar and wind generation with univariate and multivariate dynamics equivalent to the real world ones, in order to optimize and test several grid planning possiblities on these scenarios. 
 
 In order to best achieve this goal, the best performing model will have to be evaluated on different metrics, each corresponding to different attributes needed for correct whole picture modeling. These are the different attributes that will be tested and the metrics that will be used to test them. 
@@ -292,7 +291,7 @@ Now that it is clear how the marginal distributions will be assessed, it is time
 A significantly important aspect of the models is their need to be particularly accurate on the extreme values. Periods of extreme wind or solar generation are particularly interesting to the grid, due to their displacement of other energy sources or their need of them. That is why the accuracy of the models on extreme values will be assessed through these metrics:
 \begin{itemize}
     % \item \textbf{Anderson-Darling statistic}:
-    \item \textbf{Conditional Value at Risk}: The CVaR, usually used in financial risk management, measures what a certain value on average will be given that a certain threshold has been exceeded. It is calculated as 
+    \item \textbf{Conditional Value at Risk distance}: The CVaR, usually used in financial risk management, measures what a certain value on average will be given that a certain threshold has been exceeded. It is calculated as 
     \begin{equation}
         \text{CVaR}_{\alpha}(x) = \mathbb{E} \left[X\mid X>\text{VaR}_{\alpha}\right]
     \end{equation} 
@@ -300,12 +299,12 @@ A significantly important aspect of the models is their need to be particularly 
     \begin{equation}
         \text{VaR}_{\alpha}=\text{inf}\{x|F_X(x)\geq\alpha\}
     \end{equation}
-    The assessment metric will be the difference between the CVaR calculated as 
+    The assessment metric will be the difference between the modeled and empirical CVaR calculated as 
     \begin{equation}
         \text{CVRD}=\frac{\text{CVaR}^m_{95\%}}{\text{CVaR}^e_{95\%}}-1
     \end{equation}
     where $\text{CVaR}^m_{95\%}$ is the CVaR at a 95\% level for the model and $\text{CVaR}^e_{95\%}$ is the empirical CVaR at a 95\% level.
-    \item \textbf{Tail dependence}: The tail dependence coefficient is a measure of the comovements of the tails of their distributions. It can be lower tail dependence or upper tail dependence, with the lower tail dependence calculated as 
+    \item \textbf{Tail dependence coefficient}: The tail dependence coefficient is a measure of the comovements of the tails of their distributions. It can be lower tail dependence or upper tail dependence, with the lower tail dependence calculated as 
     \begin{equation}
         \lambda_l=\lim_{q \to 0} P\left(X_m \leq F^{-1}_m(q) \mid X_e \leq F^{-1}_e(q)\right)  
     \end{equation}
@@ -315,8 +314,10 @@ A significantly important aspect of the models is their need to be particularly 
     \end{equation}
     with $F^{-1}_m$ being the inverse CDF for the model and $F^{-1}_e$ being the empirical inverse CDF.
 
-    There will be two comparisons. The comparison of the tail dependence between each pair of modeled variables with that of the corresponding pair of empirical variables -- e.g. tail dependence between modeled solar PV and modeled wind and tail dependence between empirical solar PV and empirical wind -- and also the tail dependence between each modeled variable with its corresponding empirical varaiable -- e.g. tail dependence between modeled solar PV with empirical solar PV.  
-    \item \textbf{Return level}: The GEV function is a function often used to model the maxima of sequences of random variables. Its CDF is
+    The tail dependence between each modeled variable with its corresponding empirical varaiable will be studied -- e.g. tail dependence between modeled solar PV with empirical solar PV.  
+
+    Note how in practice there is not enough data to calculate an infinitesimally continous $F^{-1}_m$ or $F^{-1}_e$. Therefore, an aproximation will be done where instead of calcualting the limit, the coefficient for a $q=0.05$ or $q=0.95$ -- depending on which tail is being studied -- will be used. 
+    \item \textbf{Return level distance}: The GEV function is a function often used to model the maxima of sequences of random variables. Its CDF is
     \begin{equation}
         P\left(GEV\left(\mu,\sigma,\xi\right)\leq x\right)=e^{-t\left(x\right)}
     \end{equation}
@@ -357,7 +358,7 @@ As an alternative approach to cross validation and bootstrapping, the test and v
     \centering
     \begin{tabular}{rll}
         \toprule
-        Solar PV & \multicolumn{2}{c}{Period} \\ 
+        \textbf{Solar PV} & \multicolumn{2}{c}{Period} \\ 
         \cmidrule(lr){2-3}
             & Test & Validation \\
         \midrule
@@ -389,7 +390,7 @@ Note how for solar PV the metrics regarding the extreme values in the left tail 
     \centering
     \begin{tabular}{rll}
         \toprule
-        Solar TH & \multicolumn{2}{c}{Period} \\ 
+        \textbf{Solar TH} & \multicolumn{2}{c}{Period} \\ 
         \cmidrule(lr){2-3}
             & Test & Validation \\
         \midrule
@@ -419,7 +420,7 @@ In \autoref{table:eval-metrics-test-validation-solar-th} the same metrics shown 
     \centering
     \begin{tabular}{rll}
         \toprule
-        Wind & \multicolumn{2}{c}{Period} \\ 
+        \textbf{Wind} & \multicolumn{2}{c}{Period} \\ 
         \cmidrule(lr){2-3}
             & Test & Validation \\
         \midrule

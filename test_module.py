@@ -59,15 +59,6 @@ def compare_results(results_list):
         res_df = test.get_results_df()
         res_dict[name] = res_df
 
-    # for r in results_list:
-    #     name = r.split("_")
-    #     name = name[2]
-    #     if name in res_dict.keys():
-    #         name += '_' + r.split('_')[-1]
-    #     test = Test(results=r)
-    #     res_df = test.get_results_df()
-    #     res_dict[name] = res_df
-
     keys = list(res_dict.keys())
     y_cols = res_dict[keys[0]].columns
     created_dataframes = False
@@ -83,9 +74,11 @@ def compare_results(results_list):
         
         created_dataframes = True
     
+    inverse_rank = ['tail_dependence_coef_pos','tail_dependence_coef_neg']
     rank_dfs = {}
     for y_col in y_cols:
         rank_dfs[y_col] = complete_dataframes[y_col].abs().rank(axis=1, ascending=True)
+        rank_dfs[y_col].loc[inverse_rank,:] = complete_dataframes[y_col].loc[inverse_rank,:].abs().rank(axis=1, ascending=False)
         rank_dfs[y_col].loc['total'] = rank_dfs[y_col].sum()
         rank_dfs[y_col].loc['total_rank'] = rank_dfs[y_col].loc['total'].rank(ascending=True)
 
@@ -108,7 +101,7 @@ def create_test_from_results(path):
     test.save_test_results(name=name)
     return
 
-def create_latex_tables(df_comp, df_rank, separator=7, path='testing'):
+def create_latex_tables(df_comp, df_rank, separator=7, path='testing',custom_name=''):
     float_format_comp = lambda x: f'{x:.4g}'
     float_format_rank = lambda x: f'({x:.0f})'
     table_values = {
@@ -170,10 +163,10 @@ def create_latex_tables(df_comp, df_rank, separator=7, path='testing'):
         df_rank_clean_1 = df_rank_clean.iloc[:,:separator]
         df_rank_clean_2 = df_rank_clean.iloc[:,separator:]
 
-        df_comp_clean_1.to_csv(os.path.join(path,f"comp_df_sera_{k}_1.csv"),sep='&', float_format=float_format_comp,index=False)
-        df_comp_clean_2.to_csv(os.path.join(path,f"comp_df_sera_{k}_2.csv"),sep='&', float_format=float_format_comp,index=False)
-        df_rank_clean_1.to_csv(os.path.join(path,f"rank_df_sera_{k}_1.csv"),sep='&', float_format=float_format_rank,index=False)
-        df_rank_clean_2.to_csv(os.path.join(path,f"rank_df_sera_{k}_2.csv"),sep='&', float_format=float_format_rank,index=False)
+        df_comp_clean_1.to_csv(os.path.join(path,f"comp_df_{custom_name}_{k}_1.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_comp_clean_2.to_csv(os.path.join(path,f"comp_df_{custom_name}_{k}_2.csv"),sep='&', float_format=float_format_comp,index=False)
+        df_rank_clean_1.to_csv(os.path.join(path,f"rank_df_{custom_name}_{k}_1.csv"),sep='&', float_format=float_format_rank,index=False)
+        df_rank_clean_2.to_csv(os.path.join(path,f"rank_df_{custom_name}_{k}_2.csv"),sep='&', float_format=float_format_rank,index=False)
         
     return
 
@@ -465,11 +458,11 @@ class Test():
     
 
 if __name__=='__main__':
-    # files = [
-    #     'testing/fedformer_univariate_2024-10-26_13-46-59.pkl',
-    # ]
-    # for f in files:
-    #     create_test_from_results(f)
+    files = [
+        'testing/nbeats_univariate_2024-10-28_02-21-27.pkl',
+    ]
+    for f in files:
+        create_test_from_results(f)
 
 
     # # ## Compare results
@@ -481,7 +474,7 @@ if __name__=='__main__':
     #     'testing/test_001_validation_set_2024-10-10_15-51-29.pkl',
     #     'testing/test_001_regression_2024-10-12_01-34-06.pkl',
     #     'testing/test_001_sarimax_2024-10-14_03-26-20.pkl',
-    #     'testing/test_001_varmax_2024-10-24_14-00-52.pkl',
+    #     'testing/test_001_varmax_2024-10-27_21-25-24.pkl',
     #     'testing/test_001_svm_2024-10-11_13-38-25.pkl',
     #     'testing/test_001_xgboost_2024-10-11_01-52-25.pkl',
     #     # 'lstm',
@@ -493,13 +486,13 @@ if __name__=='__main__':
     #     'testing/test_001_fedformer_univariate_2024-10-26_15-56-39.pkl',
     #     'testing/test_001_itransformer_multivariate_2024-10-25_02-02-12.pkl',
     # ]
-    comparison_list = [
-        'testing/test_001_xgboost_2024-10-11_01-52-25.pkl',
-        'testing/test_001_xgboost_sera_minus_2024-10-26_16-22-52.pkl',
-        'testing/test_001_xgboost_sera_plus_2024-10-26_15-12-41.pkl',
-    ]
-    comp_df, rank_df = compare_results(comparison_list)
-    create_latex_tables(comp_df, rank_df)
+    # comparison_list = [
+    #     'testing/test_001_xgboost_2024-10-11_01-52-25.pkl',
+    #     'testing/test_001_xgboost_sera_minus_2024-10-26_16-22-52.pkl',
+    #     'testing/test_001_xgboost_sera_plus_2024-10-26_15-12-41.pkl',
+    # ]
+    # comp_df, rank_df = compare_results(comparison_list)
+    # create_latex_tables(comp_df, rank_df, custom_name='sera')
 
     # def read_dataset(name='data/factor_capacidad.csv'):
     #     df = pd.read_csv(name,index_col=0,parse_dates=True)

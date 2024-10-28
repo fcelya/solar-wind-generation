@@ -67,6 +67,7 @@ ORDER=(2,2)
 
 start = time()
 df = read_full_dataset()
+df = df.iloc[-24*365-24*100:]
 y_cols = df.columns
 df['wind'] = np.clip(df['wind'], 0.0001, np.inf)
 df['wind'], lbc_wind = boxcox(df['wind'])
@@ -77,7 +78,6 @@ df['solar_pv'], lbc_solar_pv = boxcox(df['solar_pv'])
 
 Y_full_train = df.iloc[:-FULL_HORIZON]
 Y_full_test = df.iloc[-FULL_HORIZON:]
-Y_train = Y_full_train.copy()
 
 X_train = create_varmax_df(Y_full_train, lags=LAGS, freqs=FREQS)
 Y_train = X_train[y_cols]
@@ -115,15 +115,15 @@ for i in range(n_laps):
 
 print(f'Prediction: {time()-start:.1f} s')
 
-Y_train = invert_box_cox(Y_train,lbc_wind,'wind')
+Y_full_train = invert_box_cox(Y_full_train,lbc_wind,'wind')
 Y_full_test = invert_box_cox(Y_full_test,lbc_wind,'wind')
-Y_train = invert_box_cox(Y_train,lbc_solar_pv,'solar_pv')
+Y_full_train = invert_box_cox(Y_full_train,lbc_solar_pv,'solar_pv')
 Y_full_test = invert_box_cox(Y_full_test,lbc_solar_pv,'solar_pv')
-Y_train = invert_box_cox(Y_train,lbc_solar_th,'solar_th')
+Y_full_train = invert_box_cox(Y_full_train,lbc_solar_th,'solar_th')
 Y_full_test = invert_box_cox(Y_full_test,lbc_solar_th,'solar_th')
 
 df_obs = Y_full_test
-df_pred = Y_train
+df_pred = Y_full_train
 df_pred = df_pred.iloc[-FULL_HORIZON:,:]
 
 model = 'varmax'
