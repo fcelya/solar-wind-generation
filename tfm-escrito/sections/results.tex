@@ -374,14 +374,20 @@ Finally, regarding the evaluation method itself, it is worth noting how for exam
     \centering
     \captionsetup{justification=centering}
     \includegraphics[width=0.7\linewidth]{assets/varmax-wind.png}
-    \caption{Weekly and yearly predicted and actual solar TH capacity factor for the iTransformer model}
+    \caption{Weekly and yearly predicted and actual wind capacity factor for the VARMAX model}
     \label{fig:varmax-wind}
 \end{figure}
 The comparison seen in \autoref{fig:varmax-wind} is by far the most discouraging one. It can be seen how the modeled profile distribution has nothing to do with the actual one. The volatility in the modeled data is much lower than the real one, with all of the data being concentrated around a yearly seasonality which only captures very basic yearly and daily profiles -- with the daily ones being present only in the summer, but the model showing them for the whole year. 
 
-It is not very promising that this is the best model that could be found, although using other models not as constrained by the seasonality and simplicity of the VARMAX does not shed much improvement. 
+It is not very promising that this is the best model that could be found, although using other models not as constrained by the seasonality and simplicity of the VARMAX does not shed much improvement as seen in \autoref{fig:varmax-nbeats-wind}. 
 
-\textcolor{red}{ADD NBEATS PLOT?}
+\begin{figure}[ht]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.7\linewidth]{assets/varmax-nbeats-wind.png}
+    \caption{Weekly and yearly predicted and actual wind capacity factor for the VARMAX and N-BEATS model}
+    \label{fig:varmax-nbeats-wind}
+\end{figure}
 
 This does shed some light on some necessary changes for future works. It is clear that the wind capacity factor has a really prominent random component and a low signal to noise ratio. The loss functions that have been used, which are mainly MAE and SE as they are the standard for these type of tasks, make the model extremely risk averse in their predictions and when they cannot accurately predict the wind values they end up predicting a kind of mean. For more realistic modeling of wind data it seems like different loss functions that don't penalize point errors that much need to be used. 
 
