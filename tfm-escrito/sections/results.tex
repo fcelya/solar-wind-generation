@@ -377,10 +377,10 @@ Finally, regarding the evaluation method itself, it is worth noting how for exam
     \caption{Weekly and yearly predicted and actual wind capacity factor for the VARMAX model}
     \label{fig:varmax-wind}
 \end{figure}
-The comparison seen in \autoref{fig:varmax-wind} is by far the most discouraging one. It can be seen how the modeled profile distribution has nothing to do with the actual one. The volatility in the modeled data is much lower than the real one, with all of the data being concentrated around a yearly seasonality which only captures very basic yearly and daily profiles -- with the daily ones being present only in the summer, but the model showing them for the whole year. 
+The comparison seen in \autoref{fig:varmax-wind} is by far the most discouraging one. It can be seen how the modeled profile distribution has nothing to do with the actual one. The variance in the modeled data is much lower than the real one, with all of the data being concentrated around a yearly seasonality which only captures very basic yearly and daily profiles -- with the daily ones being present only in the summer, but the model showing them for the whole year. 
 
-It is not very promising that this is the best model that could be found, although using other models not as constrained by the seasonality and simplicity of the VARMAX does not shed much improvement as seen in \autoref{fig:varmax-nbeats-wind}. 
-
+It is not very promising that this is the best model that could be found, although using other models not as constrained by the seasonality and simplicity of the VARMAX does not show much improvement as seen in \autoref{fig:varmax-nbeats-wind}. The same crowding of the predicted data around the mean can be seen, with the model being unable to create data with the appropriate variance. 
+\newpage
 \begin{figure}[ht]
     \centering
     \captionsetup{justification=centering}
