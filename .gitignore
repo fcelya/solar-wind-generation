@@ -24,6 +24,8 @@ obsolete
 *.png
 *ZoneIdentifier
 
+ltex.*
+
 !tfm-escrito/assets/*.png
 !testing/*.pkl
 
