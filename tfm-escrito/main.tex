@@ -21,6 +21,7 @@ style=apa
 \usepackage{lscape}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{glossaries}
 \usepackage[toc,page]{appendix}
 \usepackage[justification=centering]{caption}
 
@@ -85,6 +86,7 @@ style=apa
 % \author{Fernando Celaya}
 \date{\today}
 
+% \makeglossaries
 \begin{document}
 \pagestyle{empty}
 \begin{titlepage}
@@ -108,7 +110,7 @@ style=apa
 \newpage
 
 \begin{abstract}
-  This work evaluates models for long-term modeling of hourly capacity factors for solar PV, solar TH, and wind power, aiming to support grid planners and operators in a context of higher renewable integration. Twelve models were tested across distribution fit, temporal consistency, coherence, and extreme value accuracy. Findings reveal model suitability varies: the N-HiTS best captures solar PV frequency components which are the main driving factor for this series, iTransformer excels by best handling solar TH higher complexity, and VARMAX is optimal for wind's lower signal to noise ratio. A custom SERA loss function improved extreme wind event prediction, though challenges remain in accurately modeling wind data.
+  This work evaluates models for medium-term modeling of hourly capacity factors for solar PV, solar TH, and wind power, aiming to support grid planners and operators in a context of higher renewable integration. Twelve models were tested across distribution fit, temporal consistency, coherence, and extreme value accuracy. Findings reveal model suitability varies: the N-HiTS best captures solar PV frequency components which are the main driving factor for this series, iTransformer excels by best handling solar TH higher complexity, and VARMAX is optimal for wind's lower signal to noise ratio. A custom SERA loss function improved extreme wind event prediction, though challenges remain in accurately modeling wind data.
 \end{abstract}
 \keywords{Renewable energy modeling, solar, wind, Spanish electrical system, time series forecasting, loss function, model evaluation.}
 \newpage
@@ -141,6 +143,10 @@ I would like to express my deepest gratitude to my supervisors, Andrés Ramos an
 \input{sections/results}
 \newpage
 \input{sections/conclusion}
+\newpage
+\input{sections/glossary}
+% \newglossaryentry{utc}{name=UTC, description={Coordinated Universal Time}}
+% \printglossaries
 \newpage
 \begin{appendices}
 \input{sections/appendix-code}
